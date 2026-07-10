@@ -1,0 +1,16 @@
+{
+  "name": "Hjortemosen Booking",
+  "short_name": "Hjortemosen",
+  "description": "Offline booking og administration af fælleshuset i H/F Hjortemosen.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f7f4",
+  "theme_color": "#245c3b",
+  "lang": "da-DK",
+  "icons": [
+    {"src":"assets/icons/icon-192.png","sizes":"192x192","type":"image/png"},
+    {"src":"assets/icons/icon-512.png","sizes":"512x512","type":"image/png"},
+    {"src":"assets/icons/apple-touch-icon.png","sizes":"180x180","type":"image/png"}
+  ]
+}
