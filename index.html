@@ -8,8 +8,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Hjortemosen">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+  <link rel="stylesheet" href="./styles.css?v=1.3">
   <title>Hjortemosen Booking</title>
 </head>
 <body>
@@ -72,10 +72,10 @@
   </section>
 
   <section id="documents" class="view">
-    <div class="card"><h2>Lejekontrakter</h2><p class="muted">Dokumenterne virker offline efter første åbning af appen.</p>
-      <div class="doc-card"><div><strong>Lejekontrakt – 1.000 kr.</strong><small>Til haveforeningens medlemmer</small></div><div class="doc-actions"><a class="secondary button" href="assets/contracts/Lejekontrakt_1000.pdf" target="_blank">Åbn</a><a class="primary button" href="assets/contracts/Lejekontrakt_1000.pdf" download>Download</a><button class="secondary" data-print="assets/contracts/Lejekontrakt_1000.pdf">Print</button></div></div>
-      <div class="doc-card"><div><strong>Lejekontrakt – 1.500 kr.</strong><small>Til venner og øvrige lejere</small></div><div class="doc-actions"><a class="secondary button" href="assets/contracts/Lejekontrakt_1500.pdf" target="_blank">Åbn</a><a class="primary button" href="assets/contracts/Lejekontrakt_1500.pdf" download>Download</a><button class="secondary" data-print="assets/contracts/Lejekontrakt_1500.pdf">Print</button></div></div>
-      <div class="doc-card"><div><strong>Redigerbar Word-version</strong><small>Lejekontrakt – 1.500 kr.</small></div><div class="doc-actions"><a class="primary button" href="assets/contracts/Lejekontrakt_1500.docx" download>Download Word</a></div></div>
+    <div class="card"><h2>Lejekontrakter</h2><p class="muted">Dokumenterne virker offline efter første åbning. På iPhone/iPad: Åbn PDF-filen, tryk på Del og vælg Udskriv.</p>
+      <div class="doc-card"><div><strong>Lejekontrakt – 1.000 kr.</strong><small>Til haveforeningens medlemmer</small></div><div class="doc-actions"><a class="secondary button" href="./kontrakt-1000.pdf?v=1.3" target="_blank">Åbn</a><a class="primary button" href="./kontrakt-1000.pdf?v=1.3" download="Lejekontrakt-Hjortemosen-1000.pdf">Download</a><button class="secondary" data-print="./kontrakt-1000.pdf?v=1.3">Print</button></div></div>
+      <div class="doc-card"><div><strong>Lejekontrakt – 1.500 kr.</strong><small>Til venner og øvrige lejere</small></div><div class="doc-actions"><a class="secondary button" href="./kontrakt-1500.pdf?v=1.3" target="_blank">Åbn</a><a class="primary button" href="./kontrakt-1500.pdf?v=1.3" download="Lejekontrakt-Hjortemosen-1500.pdf">Download</a><button class="secondary" data-print="./kontrakt-1500.pdf?v=1.3">Print</button></div></div>
+      <div class="doc-card"><div><strong>Redigerbar Word-version</strong><small>Lejekontrakt – 1.000 kr.</small></div><div class="doc-actions"><a class="primary button" href="./kontrakt-1000.docx?v=1.3" download="Lejekontrakt-Hjortemosen-1000.docx">Download Word</a></div></div>
     </div>
   </section>
 
@@ -87,12 +87,13 @@
     </form></div>
     <div class="card"><h2>Sikkerhedskopi</h2><p class="muted">Data ligger kun på denne enhed. Eksportér jævnligt en kopi.</p><div class="actions"><button id="exportData" class="secondary">Eksportér data</button><label class="secondary button">Importér data<input id="importData" type="file" accept="application/json" hidden></label></div></div>
   </section>
+<div class="version-note">Version 1.3</div>
 </main>
 <nav class="bottom-nav">
   <button data-view="dashboard" class="active">Overblik</button><button data-view="calendar">Kalender</button><button data-view="booking">Booking</button><button data-view="renters">Lejere</button><button data-view="documents">Dokumenter</button><button data-view="settings">Mere</button>
 </nav>
 <dialog id="blacklistDialog"><form method="dialog" id="blacklistForm"><h2>Tilføj til blacklist</h2><label>Navn<input id="blName" required></label><label>Husnummer<input id="blHouse"></label><label>Årsag<textarea id="blReason" required rows="3"></textarea></label><div class="actions"><button value="cancel" class="secondary">Annuller</button><button value="default" class="danger" id="saveBlacklist">Gem</button></div></form></dialog>
 <div id="toast" class="toast"></div>
-<script src="app.js"></script>
+<script src="./app.js?v=1.3"></script>
 </body>
 </html>

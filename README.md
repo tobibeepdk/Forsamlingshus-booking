@@ -1,35 +1,36 @@
-# Hjortemosen Booking – PWA
+# Hjortemosen Booking PWA – version 1.2
 
-En offline webapp til booking og administration af fælleshuset i H/F Hjortemosen.
+Denne version retter 404-fejlen ved dokumenterne.
 
-## Funktioner
-- Kalender med bookede og ledige datoer
-- Beskyttelse mod dobbeltbooking
-- Gemte lejere med navn, telefon, mail og husnummer
-- Prisgrupper: haveforeningsmedlem, ven og andre
-- Betalingsstatus for leje og depositum
-- Bemærkninger på bookinger
-- Blacklist med blokering af nye bookinger
-- Offline lokal lagring
-- Eksport/import af sikkerhedskopi
-- Lejekontrakter som PDF/Word med åbning, download og print
+Alle filer ligger i samme mappe. Derfor undgås fejl med manglende undermapper på GitHub Pages.
 
-## Kør lokalt
-En service worker virker ikke ved blot at dobbeltklikke på index.html. Start en lokal server i mappen:
+## Vigtigt ved opdatering på GitHub
 
-```bash
-python3 -m http.server 8080
-```
+1. Slet de gamle filer i repositoryet, eller overskriv dem.
+2. Pak ZIP-filen ud.
+3. Åbn mappen `Hjortemosen_PWA_v1.2`.
+4. Upload ALLE filer fra mappen til roden af GitHub-repositoryet.
+5. Kontrollér især, at disse tre filer kan ses på GitHub:
+   - `kontrakt-1000.pdf`
+   - `kontrakt-1500.pdf`
+   - `kontrakt-1000.docx`
+6. GitHub Pages skal bruge branch `main` og mappe `/root`.
 
-Åbn derefter `http://localhost:8080`.
+## Efter opdatering på iPhone/iPad
 
-## GitHub Pages
-1. Opret et nyt offentligt GitHub-repository.
-2. Upload alle filer og mapper fra denne projektmappe til roden af repositoryet.
-3. Gå til **Settings → Pages**.
-4. Vælg **Deploy from a branch**.
-5. Vælg `main` og `/root`, og tryk **Save**.
-6. Åbn den viste Pages-adresse i Safari på iPhone eller iPad.
-7. Tryk **Del → Føj til hjemmeskærm**.
+Luk webappen helt og åbn den igen. Hvis den gamle version stadig vises:
 
-Data gemmes lokalt i Safari på den enkelte enhed. Brug eksportfunktionen til sikkerhedskopier.
+1. Slet Hjortemosen-ikonet fra hjemmeskærmen.
+2. Åbn GitHub Pages-adressen i Safari.
+3. Genindlæs siden.
+4. Vælg Del → Føj til hjemmeskærm.
+
+## Udskrivning på iPhone/iPad
+
+Åbn PDF-kontrakten, tryk på Del-knappen og vælg `Udskriv`.
+
+
+## Dokumenter i version 1.3
+
+- Ny lejekontrakt på 1.000 kr. som PDF og Word
+- Ny lejekontrakt på 1.500 kr. som PDF
