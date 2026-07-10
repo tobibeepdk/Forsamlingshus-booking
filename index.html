@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#245c3b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Hjortemosen">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+  <link rel="stylesheet" href="./styles.css?v=1.4">
+  <title>Hjortemosen Booking</title>
+</head>
+<body>
+<header class="app-header">
+  <div>
+    <div class="eyebrow">H/F Hjortemosen</div>
+    <h1>Booking af fælleshus</h1>
+  </div>
+  <button id="installBtn" class="secondary hidden">Installer</button>
+</header>
+<main>
+  <section id="dashboard" class="view active">
+    <div class="stats" id="stats"></div>
+    <div class="card">
+      <div class="card-head"><h2>Kommende bookinger</h2><button class="primary" data-go="booking">Ny booking</button></div>
+      <div id="upcomingList" class="list"></div>
+    </div>
+  </section>
+
+  <section id="calendar" class="view">
+    <div class="calendar-toolbar">
+      <button id="prevMonth" class="icon-btn">‹</button>
+      <h2 id="monthLabel"></h2>
+      <button id="nextMonth" class="icon-btn">›</button>
+    </div>
+    <div class="legend"><span><i class="dot booked"></i>Booket</span><span><i class="dot unpaid"></i>Mangler betaling</span><span><i class="dot free"></i>Ledig</span></div>
+    <div class="calendar-grid weekdays"><span>Man</span><span>Tir</span><span>Ons</span><span>Tor</span><span>Fre</span><span>Lør</span><span>Søn</span></div>
+    <div id="calendarGrid" class="calendar-grid"></div>
+  </section>
+
+  <section id="booking" class="view">
+    <div class="card">
+      <div class="card-head"><h2 id="bookingFormTitle">Ny booking</h2><button id="resetBooking" class="secondary">Ryd</button></div>
+      <form id="bookingForm">
+        <input type="hidden" id="bookingId">
+        <label>Dato<input id="bookingDate" type="date" required></label>
+        <label>Vælg gemt lejer<select id="savedRenter"><option value="">— Ny eller ikke gemt —</option></select></label>
+        <div class="two-col"><label>Navn<input id="name" required autocomplete="name"></label><label>Have nummer<input id="houseNo" autocomplete="off"></label></div>
+        <div class="two-col"><label>Telefon<input id="phone" type="tel" autocomplete="tel"></label><label>E-mail<input id="email" type="email" autocomplete="email"></label></div>
+        <fieldset><legend>Lejertype</legend><div class="segmented">
+          <label><input type="radio" name="renterType" value="member" checked><span>Haveforening</span></label>
+          <label><input type="radio" name="renterType" value="friend"><span>Ven</span></label>
+          <label><input type="radio" name="renterType" value="other"><span>Andre</span></label>
+        </div></fieldset>
+        <div class="two-col"><label>Pris (kr.)<input id="price" type="number" min="0" step="1" required></label><label>Depositum (kr.)<input id="deposit" type="number" min="0" step="1"></label></div>
+        <div class="checks"><label><input id="paid" type="checkbox"> Leje betalt</label><label><input id="depositPaid" type="checkbox"> Depositum betalt</label><label><input id="saveRenter" type="checkbox" checked> Gem lejeren</label></div>
+        <label>Bemærkninger<textarea id="notes" rows="4" placeholder="Særlige aftaler, nøgleudlevering, skader eller andet"></textarea></label>
+        <div id="bookingWarning" class="warning hidden"></div>
+        <div id="autoSaveStatus" class="autosave-status">Kladde gemmes automatisk på denne enhed</div>
+        <div class="actions"><button type="submit" class="primary">Gem booking</button><button type="button" id="saveDraft" class="secondary">Gem kladde manuelt</button><button type="button" id="deleteBooking" class="danger hidden">Slet booking</button></div>
+      </form>
+    </div>
+  </section>
+
+  <section id="renters" class="view">
+    <div class="card"><div class="card-head"><h2>Gemte lejere</h2><input id="renterSearch" class="search" placeholder="Søg navn eller have nummer"></div><div id="renterList" class="list"></div></div>
+  </section>
+
+  <section id="blacklist" class="view">
+    <div class="card"><div class="card-head"><h2>Blacklist</h2><button id="addBlacklist" class="primary">Tilføj</button></div><div id="blacklistList" class="list"></div></div>
+  </section>
+
+  <section id="documents" class="view">
+    <div class="card"><h2>Lejekontrakter</h2><p class="muted">Dokumenterne virker offline efter første åbning. På iPhone/iPad: Åbn PDF-filen, tryk på Del og vælg Udskriv.</p>
+      <div class="doc-card"><div><strong>Lejekontrakt – 1.000 kr.</strong><small>Til haveforeningens medlemmer</small></div><div class="doc-actions"><a class="secondary button" href="./kontrakt-1000.pdf?v=1.4" target="_blank">Åbn</a><a class="primary button" href="./kontrakt-1000.pdf?v=1.4" download="Lejekontrakt-Hjortemosen-1000.pdf">Download</a><button class="secondary" data-print="./kontrakt-1000.pdf?v=1.4">Print</button></div></div>
+      <div class="doc-card"><div><strong>Lejekontrakt – 1.500 kr.</strong><small>Til venner og øvrige lejere</small></div><div class="doc-actions"><a class="secondary button" href="./kontrakt-1500.pdf?v=1.4" target="_blank">Åbn</a><a class="primary button" href="./kontrakt-1500.pdf?v=1.4" download="Lejekontrakt-Hjortemosen-1500.pdf">Download</a><button class="secondary" data-print="./kontrakt-1500.pdf?v=1.4">Print</button></div></div>
+      <div class="doc-card"><div><strong>Redigerbar Word-version</strong><small>Lejekontrakt – 1.000 kr.</small></div><div class="doc-actions"><a class="primary button" href="./kontrakt-1000.docx?v=1.4" download="Lejekontrakt-Hjortemosen-1000.docx">Download Word</a></div></div>
+    </div>
+  </section>
+
+  <section id="settings" class="view">
+    <div class="card"><h2>Indstillinger</h2><form id="settingsForm">
+      <div class="two-col"><label>Pris for medlem<input id="memberPrice" type="number" min="0"></label><label>Pris for ven/andre<input id="otherPrice" type="number" min="0"></label></div>
+      <label>Standarddepositum<input id="defaultDeposit" type="number" min="0"></label>
+      <button class="primary" type="submit">Gem priser</button>
+    </form></div>
+    <div class="card"><h2>Gem og del data</h2><p class="muted">Bookinger gemmes automatisk på denne enhed. Du kan også gemme en manuel sikkerhedskopi eller dele den med andre. Modtageren kan importere filen i appen.</p><div class="actions"><button id="exportData" class="secondary">Gem sikkerhedskopi</button><button id="shareData" class="primary">Del data med andre</button><button id="shareOverview" class="secondary">Del bookingoversigt</button><label class="secondary button">Importér data<input id="importData" type="file" accept="application/json" hidden></label></div><p class="muted small-note">Deling laver en fil eller oversigt. Det er ikke automatisk live-synkronisering mellem flere telefoner.</p></div>
+  </section>
+<div class="version-note">Version 1.4</div>
+</main>
+<nav class="bottom-nav">
+  <button data-view="dashboard" class="active">Overblik</button><button data-view="calendar">Kalender</button><button data-view="booking">Booking</button><button data-view="renters">Lejere</button><button data-view="documents">Dokumenter</button><button data-view="settings">Mere</button>
+</nav>
+<dialog id="blacklistDialog"><form method="dialog" id="blacklistForm"><h2>Tilføj til blacklist</h2><label>Navn<input id="blName" required></label><label>Have nummer<input id="blHouse"></label><label>Årsag<textarea id="blReason" required rows="3"></textarea></label><div class="actions"><button value="cancel" class="secondary">Annuller</button><button value="default" class="danger" id="saveBlacklist">Gem</button></div></form></dialog>
+<div id="toast" class="toast"></div>
+<script src="./app.js?v=1.4"></script>
+</body>
+</html>
