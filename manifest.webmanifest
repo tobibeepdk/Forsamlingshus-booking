@@ -5,8 +5,8 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f5f7f4",
-  "theme_color": "#245c3b",
+  "background_color": "#f7f8f4",
+  "theme_color": "#234f40",
   "lang": "da-DK",
   "icons": [
     {
@@ -24,5 +24,6 @@
       "sizes": "180x180",
       "type": "image/png"
     }
-  ]
+  ],
+  "id": "./"
 }
