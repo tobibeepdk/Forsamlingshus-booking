@@ -1,74 +1,56 @@
-const CACHE = 'hjortemosen-pwa-v1.4';
-const ASSETS = [
-  './',
-  './index.html',
-  './styles.css?v=1.4',
-  './app.js?v=1.4',
-  './manifest.webmanifest',
-  './icon-192.png',
-  './icon-512.png',
-  './apple-touch-icon.png',
-  './kontrakt-1000.pdf?v=1.4',
-  './kontrakt-1000.docx?v=1.4',
-  './kontrakt-1500.pdf?v=1.4'
-];
-
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE)
-      .then(cache => cache.addAll(ASSETS))
-      .then(() => self.skipWaiting())
-  );
-});
-
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))
-      .then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
-
-  const url = new URL(event.request.url);
-  const isDocument = /kontrakt-(1000|1500)\.(pdf|docx)$/i.test(url.pathname);
-
-  if (isDocument) {
-    event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          if (response && response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE).then(cache => cache.put(event.request, copy));
-          }
-          return response;
-        })
-        .catch(() => caches.match(event.request))
-    );
-    return;
+const VERSION='2.1.1';
+const SCOPE=self.registration.scope;
+const PREFIX='hjortemosen-'+SCOPE+'-';
+const CACHE=PREFIX+VERSION;
+const clientVersions=new Map();
+const legacy=name=>/^hjortemosen-pwa-v1\./.test(name);
+const ASSETS=['./','./index.html','./styles.css?v=2.1.1','./data.js?v=2.1.1','./app.js?v=2.1.1','./manifest.webmanifest','./favicon.svg','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./kontrakt-1000.pdf?v=2.1.1','./kontrakt-1000.docx?v=2.1.1','./kontrakt-1500.pdf?v=2.1.1'];
+self.addEventListener('install',event=>event.waitUntil((async()=>{
+ const cache=await caches.open(CACHE);await cache.addAll(ASSETS);
+ // v1 has no update button. Activate its first upgrade without reloading a form.
+ const keys=await caches.keys();
+ if(!keys.some(k=>k.startsWith(PREFIX)&&k!==CACHE)) {
+  for(const key of keys.filter(legacy)) {
+   const old=await caches.open(key),requests=await old.keys();
+   if(requests.some(r=>r.url.startsWith(SCOPE))){await self.skipWaiting();break;}
   }
-
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-
-      return fetch(event.request).then(response => {
-        if (response && response.ok) {
-          const copy = response.clone();
-          caches.open(CACHE).then(cache => cache.put(event.request, copy));
-        }
-        return response;
-      }).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
-        return new Response('Filen er ikke tilgængelig offline.', {
-          status: 503,
-          headers: {'Content-Type': 'text/plain; charset=utf-8'}
-        });
-      });
-    })
-  );
+ }
+})()));
+async function cleanUnusedCaches(){
+ const clients=(await self.clients.matchAll({type:'window'})).filter(c=>c.url.startsWith(SCOPE));
+ for(const client of clients)if(!clientVersions.has(client.id))client.postMessage({type:'REPORT_VERSION'});
+ // An old open page may still need its old scripts or documents while offline.
+ if(clients.some(c=>clientVersions.get(c.id)!==VERSION))return;
+ for(const key of await caches.keys()) {
+  if(key.startsWith(PREFIX)&&key!==CACHE)await caches.delete(key);
+  else if(legacy(key)) {
+   const cache=await caches.open(key);
+   for(const req of await cache.keys())if(req.url.startsWith(SCOPE))await cache.delete(req);
+   if(!(await cache.keys()).length)await caches.delete(key);
+  }
+ }
+}
+self.addEventListener('message',event=>{
+ if(event.data?.type==='SKIP_WAITING')event.waitUntil(self.skipWaiting());
+ if(event.data?.type==='CLIENT_VERSION'&&event.source?.id){clientVersions.set(event.source.id,event.data.version);event.waitUntil(cleanUnusedCaches());}
+});
+self.addEventListener('activate',event=>event.waitUntil((async()=>{await self.clients.claim();await cleanUnusedCaches();})()));
+self.addEventListener('fetch',event=>{
+ if(event.request.method!=='GET')return;
+ const url=new URL(event.request.url);
+ if(url.origin!==self.location.origin||!url.href.startsWith(SCOPE))return;
+ event.respondWith((async()=>{
+  const cache=await caches.open(CACHE),cached=await cache.match(event.request);
+  if(cached)return cached;
+  for(const key of await caches.keys()) {
+   if(key===CACHE||!(key.startsWith(PREFIX)||legacy(key)))continue;
+   const previous=await (await caches.open(key)).match(event.request);
+   if(previous)return previous;
+  }
+  try{return await fetch(event.request);}
+  catch{
+   if(event.request.mode==='navigate')return await cache.match(new URL('./index.html',SCOPE).href);
+   return new Response('Filen er ikke tilgængelig offline.',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}});
+  }
+ })());
 });
