@@ -1,5 +1,5 @@
 'use strict';
-const APP_VERSION='2.2.0';
+const APP_VERSION='2.3.0';
 const KEY='hjortemosen_data_v1';
 const DRAFT_KEY='hjortemosen_booking_draft_v1';
 const RECOVERY_KEY='hjortemosen_before_import_v1';
@@ -21,7 +21,7 @@ function money(n){return new Intl.NumberFormat('da-DK').format(Number(n||0))+' k
 function timeNow(){return new Intl.DateTimeFormat('da-DK',{hour:'2-digit',minute:'2-digit'}).format(new Date());}
 function esc(v=''){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
 function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3500);}
-function go(id){$$('.view').forEach(v=>v.classList.toggle('active',v.id===id));$$('[data-view]').forEach(b=>{b.classList.toggle('active',b.dataset.view===id);b.setAttribute('aria-current',b.dataset.view===id?'page':'false');});if(id==='calendar'){renderCalendar();bindBookingButtons();}window.scrollTo({top:0,behavior:'instant'});}
+function go(id){$$('.view').forEach(v=>v.classList.toggle('active',v.id===id));$$('[data-view]').forEach(b=>{b.classList.toggle('active',b.dataset.view===id);b.setAttribute('aria-current',b.dataset.view===id?'page':'false');});if(id==='calendar'){renderCalendar();bindBookingButtons();}if(id==='documents')window.HjortContractUI?.refresh();window.scrollTo({top:0,behavior:'instant'});}
 $$('[data-view]').forEach(b=>b.onclick=()=>go(b.dataset.view));
 $$('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
 function typeLabel(t){return t==='member'?'Haveforeningsmedlem':t==='friend'?'Ven':t==='board'?'Bestyrelsesmedlem':'Tidligere lejertype';}
@@ -197,7 +197,7 @@ $('#confirmImport').onclick=()=>{
 $('#downloadRecovery').onclick=()=>{const raw=stored(RECOVERY_KEY);if(raw)download(new Blob([raw],{type:'application/json'}),'hjortemosen-foer-seneste-import.json');else toast('Der er ingen tidligere import at gendanne.');};
 $$('[data-share-doc]').forEach(b=>b.onclick=async()=>{try{const response=await fetch(b.dataset.shareDoc);if(!response.ok)throw new Error('Dokumentet kunne ikke åbnes.');const file=new File([await response.blob()],b.dataset.shareDoc.split('/').pop().split('?')[0],{type:'application/pdf'});if(navigator.share&&navigator.canShare?.({files:[file]}))await navigator.share({title:'Hjortemosen lejekontrakt',files:[file]});else{download(file,file.name);toast('Dokument downloadet');}}catch(err){if(err.name!=='AbortError')toast(err.message);}});
 $$('[data-print]').forEach(b=>b.onclick=()=>{const w=window.open(b.dataset.print,'_blank');if(!w){toast('Tillad pop op-vinduer for at printe.');return;}toast('Åbn PDF-menuen eller Del → Udskriv for at printe.');});
-function renderAll(){renderStats();renderUpcoming();renderCalendar();renderRenters();renderSavedRenter();renderBlacklist();renderSettings();bindBookingButtons();$('#downloadRecovery').classList.toggle('hidden',!stored(RECOVERY_KEY));}
+function renderAll(){window.HjortContractUI?.refresh();renderStats();renderUpcoming();renderCalendar();renderRenters();renderSavedRenter();renderBlacklist();renderSettings();bindBookingButtons();$('#downloadRecovery').classList.toggle('hidden',!stored(RECOVERY_KEY));}
 function connectionStatus(){const ready=Boolean(navigator.serviceWorker?.controller),online=navigator.onLine;$('#connectionStatus').textContent=!online?(ready?'Offline · klar til brug':'Offline · ikke indlæst helt'):ready?'Klar til offlinebrug':'Forbereder offlinebrug';$('#connectionStatus').classList.toggle('is-offline',!online);}
 window.addEventListener('online',connectionStatus);window.addEventListener('offline',connectionStatus);
 window.addEventListener('storage',e=>{if(e.key===KEY){data=load();if(storageBlocked)storageError('Data blev ændret i et andet vindue og kunne ikke læses. Den oprindelige fil er bevaret.');else{renderAll();checkWarning();toast('Overblikket er opdateret fra et andet vindue.');}}});
