@@ -34,3 +34,7 @@ Test: `node --test tests/*.test.cjs`. Fysisk iPad Mail/Beskeder og AirPrint bør
 Under Dokumenter kan lejeren skrive med en finger eller Apple Pencil i underskriftsfeltet. Brug Ryd underskrift for at starte igen. Den håndskrevne underskrift indsættes i begge PDF-kontrakter og i Word-kontrakten; navnet følger med. Opret den færdige fil med Lav udfyldt kontrakt og del den via Mail eller Beskeder.
 
 Underskriften findes kun i den åbne formular og den færdige kontraktfil. Ændringer i kontraktfelter, valg af en anden kontrakt/booking og nulstilling rydder underskriften. Betalingsstatus alene rydder den ikke. Hvis underskriftsfeltet er tomt, oprettes kontrakten uden håndskrevet underskrift.
+
+## Bestyrelsens depositum (v2.4.1)
+
+Bestyrelsesmedlemmer betaler 0 kr. i leje og 500 kr. i depositum. Markér **Depositum betalt**, når beløbet er modtaget. Ubetalt depositum vises i overblikket og kalenderen. Beløbene er faste for bestyrelsen, også ved andre standardpriser. Ældre gemte bestyrelsesbookinger og sikkerhedskopier med 0 kr. i depositum kan stadig læses; ved redigering og gemning anvendes de 500 kr.
