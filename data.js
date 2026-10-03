@@ -25,7 +25,8 @@ const HjortData = (() => {
         if(kind === 'bookings') {
           if(strict && dates.has(record.date)) throw new Error('Sikkerhedskopien har flere bookinger på samme dato.');
           dates.add(record.date);
-          if(!validDate(record.date) || !['member','friend','other'].includes(record.type) || !amount(record.price) || (record.deposit !== undefined && !amount(record.deposit))) throw new Error('En booking har ugyldig dato, lejertype eller beløb.');
+          if(!validDate(record.date) || !['member','friend','board','other'].includes(record.type) || !amount(record.price) || (record.deposit !== undefined && !amount(record.deposit))) throw new Error('En booking har ugyldig dato, lejertype eller beløb.');
+          if(record.type==='board' && (Number(record.price)!==0 || Number(record.deposit||0)!==0)) throw new Error('Bestyrelsesmedlemmer låner fælleshuset gratis uden depositum.');
           for(const field of ['paid','depositPaid']) if(record[field] !== undefined && typeof record[field] !== 'boolean') throw new Error('Ugyldig betalingsstatus.');
         }
       }

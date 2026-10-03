@@ -1,10 +1,10 @@
-const VERSION='2.1.2';
+const VERSION='2.2.0';
 const SCOPE=self.registration.scope;
 const PREFIX='hjortemosen-'+SCOPE+'-';
 const CACHE=PREFIX+VERSION;
 const clientVersions=new Map();
 const legacy=name=>/^hjortemosen-pwa-v1\./.test(name);
-const ASSETS=['./','./index.html','./styles.css?v=2.1.2','./data.js?v=2.1.2','./app.js?v=2.1.2','./manifest.webmanifest','./faelleshus.jpg?v=2.1.2','./favicon.svg?v=2.1.2','./icon-192.png?v=2.1.2','./icon-512.png?v=2.1.2','./apple-touch-icon.png?v=2.1.2','./kontrakt-1000.pdf?v=2.1.2','./kontrakt-1000.docx?v=2.1.2','./kontrakt-1500.pdf?v=2.1.2'];
+const ASSETS=['./','./index.html','./styles.css?v=2.2.0','./data.js?v=2.2.0','./app.js?v=2.2.0','./manifest.webmanifest','./faelleshus.jpg?v=2.2.0','./favicon.svg?v=2.2.0','./icon-192.png?v=2.2.0','./icon-512.png?v=2.2.0','./apple-touch-icon.png?v=2.2.0','./kontrakt-1000.pdf?v=2.2.0','./kontrakt-1000.docx?v=2.2.0','./kontrakt-1500.pdf?v=2.2.0'];
 self.addEventListener('install',event=>event.waitUntil((async()=>{
  const cache=await caches.open(CACHE);await cache.addAll(ASSETS);
  // v1 has no update button. Activate its first upgrade without reloading a form.
