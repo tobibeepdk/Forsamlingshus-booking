@@ -27,3 +27,10 @@ Udfyldte lejekontrakter (v2.3.0): Under Dokumenter kan de to PDF-kontrakter og W
 De originale vilkår bevares: leje 1.000/1.500 kr., depositum 500 kr. Bookinger med andre beløb, herunder gratis bestyrelsesbookinger, blokeres ved valg af booking. Udfyldningen ændrer ikke bookingdata. Formularen opbevares kun, mens appen er åben, og indgår ikke i sikkerhedskopier. Tekst, der ikke kan stå på én linje i et PDF-felt, vises på en ekstra side med henvisning fra første side. PDF understøtter danske/latinske tegn; ved andre tegn gives en fejl med mulighed for at vælge Word. Biblioteker er versionslåste og gemt lokalt; se THIRD-PARTY-LICENSES.txt.
 
 Test: `node --test tests/*.test.cjs`. Fysisk iPad Mail/Beskeder og AirPrint bør afprøves på enheden; browser- og filtestene kontrollerer de udfyldte filer og delingsgrænsen.
+
+
+## Håndskrevet underskrift på iPad (v2.4.0)
+
+Under Dokumenter kan lejeren skrive med en finger eller Apple Pencil i underskriftsfeltet. Brug Ryd underskrift for at starte igen. Den håndskrevne underskrift indsættes i begge PDF-kontrakter og i Word-kontrakten; navnet følger med. Opret den færdige fil med Lav udfyldt kontrakt og del den via Mail eller Beskeder.
+
+Underskriften findes kun i den åbne formular og den færdige kontraktfil. Ændringer i kontraktfelter, valg af en anden kontrakt/booking og nulstilling rydder underskriften. Betalingsstatus alene rydder den ikke. Hvis underskriftsfeltet er tomt, oprettes kontrakten uden håndskrevet underskrift.
