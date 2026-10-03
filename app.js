@@ -1,5 +1,5 @@
 'use strict';
-const APP_VERSION='2.4.0';
+const APP_VERSION='2.4.1';
 const KEY='hjortemosen_data_v1';
 const DRAFT_KEY='hjortemosen_booking_draft_v1';
 const RECOVERY_KEY='hjortemosen_before_import_v1';
@@ -37,7 +37,7 @@ function renderStats(){
  $('#nextBooking').classList.toggle('is-empty',!next);
  $('#nextBooking').innerHTML=next?`<span class="eyebrow">NÆSTE BOOKING</span><h3>${esc(next.name)}</h3><p>${fmtDate(next.date)}</p><div class="next-bottom">${paymentBadge(next)}<button class="text-button" data-edit="${esc(next.id)}">Se booking <span aria-hidden="true">↗</span></button></div>`:'<span class="eyebrow">PLADS TIL FÆLLESSKAB</span><h3>Den næste gode stund</h3><p>Opret en booking, når fælleshuset skal danne rammen.</p><button class="secondary" data-new>Opret den første booking <span aria-hidden="true">↗</span></button>';
 }
-function bookingRow(b){const day=new Date(b.date+'T12:00:00');return `<button class="booking-row" data-edit="${esc(b.id)}"><span class="date-tile"><small>${new Intl.DateTimeFormat('da-DK',{month:'short'}).format(day).replace('.','')}</small><strong>${day.getDate()}</strong></span><span class="row-person"><strong>${esc(b.name)}</strong><small>${b.houseNo?'Have nummer '+esc(b.houseNo)+' · ':''}${typeLabel(b.type)}</small><span class="payment-detail">${isFreeBoard(b)?'Gratis · uden depositum':`Leje: ${b.paid?'betalt':'ikke betalt'} · Depositum: ${b.depositPaid||!Number(b.deposit)?'betalt':'ikke betalt'}`}</span></span><span class="row-end">${paymentBadge(b)}<strong>${money(b.price)}</strong></span><span class="row-arrow" aria-hidden="true">›</span></button>`;}
+function bookingRow(b){const day=new Date(b.date+'T12:00:00');return `<button class="booking-row" data-edit="${esc(b.id)}"><span class="date-tile"><small>${new Intl.DateTimeFormat('da-DK',{month:'short'}).format(day).replace('.','')}</small><strong>${day.getDate()}</strong></span><span class="row-person"><strong>${esc(b.name)}</strong><small>${b.houseNo?'Have nummer '+esc(b.houseNo)+' · ':''}${typeLabel(b.type)}</small><span class="payment-detail">${isFreeBoard(b)?'Gratis · uden depositum':`Leje: ${b.type==='board'&&!Number(b.price)?'gratis':b.paid?'betalt':'ikke betalt'} · Depositum: ${b.depositPaid||!Number(b.deposit)?'betalt':'ikke betalt'}`}</span></span><span class="row-end">${paymentBadge(b)}<strong>${money(b.price)}</strong></span><span class="row-arrow" aria-hidden="true">›</span></button>`;}
 function renderUpcoming(){
  const q=$('#bookingSearch').value.trim().toLocaleLowerCase('da'),filter=$('#bookingFilter').value||'upcoming';
  const arr=[...data.bookings].filter(b=>(filter==='all'||(filter==='unpaid'?HjortData.outstanding(b)>0:b.date>=isoLocal(new Date())))&&(!q||`${b.name} ${b.houseNo} ${b.date}`.toLocaleLowerCase('da').includes(q))).sort((a,b)=>a.date.localeCompare(b.date));
@@ -104,17 +104,19 @@ function selectRenterType(type,keepLegacy=false){
 }
 function syncPaymentMode(){
  const board=currentRenterType()==='board';
- for(const field of ['price','deposit']){$('#'+field).readOnly=board;if(board)$('#'+field).value=0;}
+ for(const field of ['price','deposit'])$('#'+field).readOnly=board;
+ if(board){$('#price').value=0;$('#deposit').value=500;}
  $('#boardPriceNote').classList.toggle('hidden',!board);
- $('.payment-checks').classList.toggle('hidden',board);
- $('#paid').disabled=board;$('#depositPaid').disabled=board;
+ $('.payment-checks').classList.remove('hidden');
+ $('#rentPaidRow').classList.toggle('hidden',board);
+ $('#paid').disabled=board;$('#depositPaid').disabled=false;
 }
 function fillRenter(r){if(!r)return;formHydrating=true;for(const k of ['name','houseNo','phone','email','address'])$('#'+k).value=r[k]||'';selectRenterType(r.type);applyPrice();checkWarning();formHydrating=false;scheduleDraftSave();}
 function applyPrice(){
  const wasBoard=$('#price').readOnly,type=$('[name=renterType]:checked')?.value||'member';
  legacyBookingType=null;$('#legacyTypeNote').classList.add('hidden');
  $('#price').value=type==='board'?0:data.settings[type==='friend'?'friendPrice':'memberPrice'];
- if(type==='board')$('#deposit').value=0;else if(wasBoard)$('#deposit').value=data.settings.deposit;
+ if(type==='board')$('#deposit').value=500;else if(wasBoard)$('#deposit').value=data.settings.deposit;
  syncPaymentMode();if(!formHydrating)scheduleDraftSave();
 }
 $$('[name=renterType]').forEach(r=>r.onchange=applyPrice);
@@ -130,7 +132,7 @@ function checkWarning(){
  const w=$('#bookingWarning');w.textContent=msgs.join(' ');w.classList.toggle('hidden',!msgs.length);$('#submitBooking').disabled=blockedSave||storageBlocked;return !blockedSave;
 }
 ['#name','#houseNo','#bookingDate'].forEach(s=>$(s).addEventListener('input',checkWarning));
-function collectDraft(){const type=currentRenterType(),board=type==='board';return {id:$('#bookingId').value,date:$('#bookingDate').value,name:$('#name').value,houseNo:$('#houseNo').value,phone:$('#phone').value,email:$('#email').value,address:$('#address').value,type,price:board?'0':$('#price').value,deposit:board?'0':$('#deposit').value,paid:$('#paid').checked,depositPaid:$('#depositPaid').checked,saveRenter:$('#saveRenter').checked,notes:$('#notes').value,savedAt:new Date().toISOString()};}
+function collectDraft(){const type=currentRenterType(),board=type==='board';return {id:$('#bookingId').value,date:$('#bookingDate').value,name:$('#name').value,houseNo:$('#houseNo').value,phone:$('#phone').value,email:$('#email').value,address:$('#address').value,type,price:board?'0':$('#price').value,deposit:board?'500':$('#deposit').value,paid:$('#paid').checked,depositPaid:$('#depositPaid').checked,saveRenter:$('#saveRenter').checked,notes:$('#notes').value,savedAt:new Date().toISOString()};}
 function hasDraftContent(d){return Boolean(d.id||d.date||['name','houseNo','phone','email','address','notes'].some(k=>String(d[k]||'').trim())||(d.type&&d.type!=='member')||(d.price!==undefined&&Number(d.price)!==data.settings.memberPrice)||(d.deposit!==undefined&&Number(d.deposit)!==data.settings.deposit)||d.paid||d.depositPaid||d.saveRenter===false);}
 function setAutoSaveStatus(text,isSaved=true){const el=$('#autoSaveStatus');el.textContent=text;el.classList.toggle('pending',!isSaved);$('#draftBanner').classList.toggle('hidden',!hasDraftContent(collectDraft()));}
 function saveDraft(manual=false){
@@ -179,7 +181,7 @@ function download(blob,name){const a=document.createElement('a'),url=URL.createO
 function downloadBackup(){download(new Blob([backupContents()],{type:'application/json'}),backupName());toast('Sikkerhedskopi eksporteret');}
 $('#exportData').onclick=downloadBackup;
 $('#shareData').onclick=async()=>{const file=new File([backupContents()],backupName(),{type:'application/json'});try{if(navigator.share&&navigator.canShare?.({files:[file]})){await navigator.share({title:'Hjortemosen Booking – sikkerhedskopi',files:[file]});toast('Sikkerhedskopi delt');}else downloadBackup();}catch(err){if(err.name!=='AbortError')downloadBackup();}};
-function bookingOverview(){const arr=[...data.bookings].filter(b=>b.date>=isoLocal(new Date())).sort((a,b)=>a.date.localeCompare(b.date));const lines=['HJORTEMOSEN – KOMMENDE BOOKINGER',''];if(!arr.length)lines.push('Ingen kommende bookinger.');for(const b of arr){lines.push(`${fmtDate(b.date)} · ${b.name}${b.houseNo?' · Have nummer '+b.houseNo:''}`,`${isFreeBoard(b)?'Bestyrelsesmedlem · Gratis · uden depositum':`${typeLabel(b.type)} · Leje ${money(b.price)} (${b.paid?'betalt':'ikke betalt'}) · Depositum ${money(b.deposit)} (${b.depositPaid?'betalt':'ikke betalt'})`}`);if(b.notes)lines.push('Bemærkning: '+b.notes);lines.push('');}return lines.join('\n');}
+function bookingOverview(){const arr=[...data.bookings].filter(b=>b.date>=isoLocal(new Date())).sort((a,b)=>a.date.localeCompare(b.date));const lines=['HJORTEMOSEN – KOMMENDE BOOKINGER',''];if(!arr.length)lines.push('Ingen kommende bookinger.');for(const b of arr){lines.push(`${fmtDate(b.date)} · ${b.name}${b.houseNo?' · Have nummer '+b.houseNo:''}`,`${isFreeBoard(b)?'Bestyrelsesmedlem · Gratis · uden depositum':`${typeLabel(b.type)} · Leje ${money(b.price)} (${b.type==='board'&&!Number(b.price)?'gratis':b.paid?'betalt':'ikke betalt'}) · Depositum ${money(b.deposit)} (${b.depositPaid?'betalt':'ikke betalt'})`}`);if(b.notes)lines.push('Bemærkning: '+b.notes);lines.push('');}return lines.join('\n');}
 $('#shareOverview').onclick=async()=>{const text=bookingOverview();try{if(navigator.share)await navigator.share({title:'Hjortemosen – bookingoversigt',text});else{download(new Blob([text],{type:'text/plain;charset=utf-8'}),'hjortemosen-bookingoversigt.txt');toast('Bookingoversigt eksporteret');}}catch(err){if(err.name!=='AbortError')download(new Blob([text],{type:'text/plain;charset=utf-8'}),'hjortemosen-bookingoversigt.txt');}};
 $('#importData').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>10000000)throw new Error('Filen er for stor. Vælg en sikkerhedskopi under 10 MB.');pendingImport=HjortData.validate(JSON.parse(await file.text()),true);$('#importSummary').textContent=`${pendingImport.bookings.length} bookinger, ${pendingImport.renters.length} lejere og ${pendingImport.blacklist.length} personer på blacklist.`;$('#importError').classList.add('hidden');$('#importDialog').showModal();}catch(err){pendingImport=null;toast('Import afvist: '+err.message);}finally{e.target.value='';}};
 $('#cancelImport').onclick=()=>{pendingImport=null;$('#importDialog').close();};
