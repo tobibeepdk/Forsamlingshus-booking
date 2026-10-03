@@ -11,7 +11,7 @@ function boot(seed, draft, options={}) {
   const radioTypes = ['member','friend','board'];
   const node = s => {
     if(s==='[name=renterType]:checked')return radioTypes.map(t=>node(`[name=renterType][value="${t}"]`)).find(r=>r.checked)||null;
-    if (!nodes.has(s)) { const classes=new Set(); nodes.set(s, {value:'',checked:false,innerHTML:'',textContent:'',dataset:{},classList:{add(c){classes.add(c)},remove(c){classes.delete(c)},toggle(c,on){const enabled=on===undefined?!classes.has(c):on;enabled?classes.add(c):classes.delete(c);return enabled;},contains(c){return classes.has(c)}},addEventListener(){},reset(){},showModal(){},close(){},focus(){},setAttribute(){},getAttribute(){return null;},querySelector(){return null;}}); }
+    if (!nodes.has(s)) { const classes=new Set(); nodes.set(s, {value:'',checked:false,innerHTML:'',textContent:'',dataset:{},events:{},classList:{add(c){classes.add(c)},remove(c){classes.delete(c)},toggle(c,on){const enabled=on===undefined?!classes.has(c):on;enabled?classes.add(c):classes.delete(c);return enabled;},contains(c){return classes.has(c)}},addEventListener(type,fn){this.events[type]=fn;},reset(){},showModal(){},close(){},focus(){},setAttribute(){},getAttribute(){return null;},querySelector(){return null;}}); }
     return nodes.get(s);
   };
   for(const type of radioTypes){const radio=node(`[name=renterType][value="${type}"]`);radio.value=type;let checked=type==='member';Object.defineProperty(radio,'checked',{get:()=>checked,set:value=>{checked=Boolean(value);if(checked)for(const other of radioTypes)if(other!==type)node(`[name=renterType][value="${other}"]`).checked=false;}});}
@@ -20,8 +20,9 @@ function boot(seed, draft, options={}) {
   const store = new Map();
   if (seed !== undefined) store.set(KEY, typeof seed === 'string' ? seed : JSON.stringify(seed));
   if (draft) store.set('hjortemosen_booking_draft_v1', JSON.stringify(draft));
+  for(const [key,value] of Object.entries(options.extraStorage||{}))store.set(key,value);
   const ctx = vm.createContext({document:{querySelector:node,querySelectorAll:s=>s==='[name=renterType]'?radioTypes.map(t=>node(`[name=renterType][value="${t}"]`)):[],addEventListener(){},visibilityState:'visible',createElement:()=>node('link'),body,title:''},localStorage:{getItem:k=>{if(options.unavailable)throw new Error("Storage unavailable");return store.get(k)||null},setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},window:{addEventListener:(type,handler)=>events.set(type,handler),scrollTo(){},print:()=>prints.push({html:node('#calendarPrint').innerHTML,title:ctx.document.title,printing:body.classList.contains('printing-calendar')}),matchMedia:()=>({matches:false})},navigator:{onLine:true,...(options.sw?{serviceWorker:options.sw}:{})},crypto:require('node:crypto').webcrypto,structuredClone,Intl,Date,Number,String,Boolean,JSON,Array,Object,Set,Map,URL,Blob,File,console,setTimeout:()=>1,clearTimeout(){},confirm:()=>true,alert(){},fetch:async()=>({ok:true}),location:{hash:'',href:'http://localhost/app/',reload(){}}});
-  for(const file of ['data.js','app.js']) if(fs.existsSync(path.join(__dirname,'..',file))) vm.runInContext(fs.readFileSync(path.join(__dirname,'..',file),'utf8'),ctx);
+  for(const file of ['data.js','backup.js','app.js']) if(fs.existsSync(path.join(__dirname,'..',file))) vm.runInContext(fs.readFileSync(path.join(__dirname,'..',file),'utf8'),ctx);
   return {ctx,node,store,events,prints,run:s=>vm.runInContext(s,ctx)};
 }
 const booking={id:'b1',date:'2026-12-12',name:'Anna',houseNo:'7',phone:'12345678',email:'a@example.dk',type:'member',price:1000,deposit:500,paid:true,depositPaid:false,notes:''};
@@ -55,7 +56,7 @@ test('blacklist reasons are preserved when backups are merged',()=>{
  const result=app.run('HjortData.merge(data,incoming)');assert.equal(result.blacklist[0].reason,'Skader\nManglende betaling');
 });
 test('successful save removes both draft and draft indicator',()=>{
- const app=boot(seed());app.node('#bookingId').value='b1';app.node('#bookingDate').value='2026-12-12';app.node('#name').value='Anna';app.node('#address').value='Testvej 2';app.node('#price').value='1000';app.node('#deposit').value='500';app.run('saveDraft()');
+ const app=boot(seed());app.run("editBooking('b1')");app.node('#bookingId').value='b1';app.node('#bookingDate').value='2026-12-12';app.node('#name').value='Anna';app.node('#address').value='Testvej 2';app.node('#price').value='1000';app.node('#deposit').value='500';app.run('saveDraft()');
  app.node('#bookingForm').onsubmit({preventDefault(){}});
  assert.equal(app.store.has('hjortemosen_booking_draft_v1'),false);
  assert.equal(app.node('#draftBanner').classList.contains('hidden'),true);
@@ -100,13 +101,13 @@ test('import preview does not change data until confirmation',async()=>{
 test('replacement import keeps a recovery copy of the previous data',async()=>{
  const app=boot(seed()),before=app.store.get(KEY),incoming=seed();incoming.bookings=[];incoming.settings.friendPrice=1200;
  await app.node('#importData').onchange({target:{files:[{text:async()=>JSON.stringify(incoming)}],value:'backup.json'}});
- app.node('[name=importMode]:checked').value='replace';app.node('#confirmImport').onclick();
+ app.node('[name=importMode]:checked').value='replace';await app.node('#confirmImport').onclick();
  assert.equal(app.store.get('hjortemosen_before_import_v1'),before);assert.equal(JSON.parse(app.store.get(KEY)).bookings.length,0);assert.equal(JSON.parse(app.store.get(KEY)).settings.friendPrice,1200);
 });
 test('declining replacement leaves existing data untouched',async()=>{
  const app=boot(seed()),before=app.store.get(KEY),incoming=seed();incoming.bookings=[];
  await app.node('#importData').onchange({target:{files:[{text:async()=>JSON.stringify(incoming)}],value:'backup.json'}});
- app.node('[name=importMode]:checked').value='replace';app.ctx.confirm=()=>false;app.node('#confirmImport').onclick();assert.equal(app.store.get(KEY),before);
+ app.node('[name=importMode]:checked').value='replace';app.ctx.confirm=()=>false;await app.node('#confirmImport').onclick();assert.equal(app.store.get(KEY),before);
 });
 test('confirmed booking deletion preserves saved renter details',()=>{
  const d=seed();d.renters=[{id:'r1',name:'Anna',houseNo:'7',address:'Skovvej 2'}];const app=boot(d);app.run("editBooking('b1')");app.node('#deleteBooking').onclick();const saved=JSON.parse(app.store.get(KEY));assert.equal(saved.bookings.length,0);assert.equal(saved.renters[0].address,'Skovvej 2');assert.equal(app.store.has('hjortemosen_booking_draft_v1'),false);
@@ -277,3 +278,12 @@ test('calendar printing preserves every legacy booking sharing a date',()=>{
  assert.equal((html.match(/<td class="print-day is-booked">/g)||[]).length,1);
  assert.equal(app.store.get(KEY),before);
 });
+
+// Missing input handlers would lose these values on reload or on another render.
+test('settings inputs persist unfinished values and survive a data render',()=>{const app=boot(seed());app.node('#memberPrice').value='';assert.ok(app.node('#settingsForm').events.input,'settings autosave connected');app.node('#settingsForm').events.input();app.run('renderAll()');assert.equal(app.node('#memberPrice').value,'');const raw=app.store.get('hjortemosen_settings_draft_v1'),reopened=boot(seed(),null,{extraStorage:{hjortemosen_settings_draft_v1:raw}});assert.equal(reopened.node('#memberPrice').value,'');assert.equal(reopened.run('data.settings.memberPrice'),1000);});
+test('valid standard prices save automatically when leaving the field',()=>{const app=boot(seed());app.node('#friendPrice').value='1300';assert.ok(app.node('#settingsForm').events.input);app.node('#settingsForm').events.input();app.node('#settingsForm').events.change();assert.equal(JSON.parse(app.store.get(KEY)).settings.friendPrice,1300);});
+test('blacklist draft returns after reload without blacklisting an unfinished person',()=>{const app=boot(seed());app.node('#blName').value='QA kladde';assert.ok(app.node('#blacklistForm').events.input,'blacklist autosave connected');app.node('#blacklistForm').events.input();const raw=app.store.get('hjortemosen_blacklist_draft_v1'),reopened=boot(seed(),null,{extraStorage:{hjortemosen_blacklist_draft_v1:raw}});assert.equal(reopened.node('#blName').value,'QA kladde');assert.equal(reopened.run('data.blacklist.length'),0);});
+test('full export includes the saved booking draft and stays compatible with data-only readers',()=>{const app=boot(seed());app.node('#name').value='QA kladde';app.run('saveDraft()');const parsed=JSON.parse(app.run('backupContents()'));assert.equal(parsed.backup?.drafts.booking.name,'QA kladde');app.ctx.copy=parsed;assert.equal(app.run('HjortData.validate(copy,true).bookings.length'),1);});
+test('stale settings draft cannot silently replace prices updated in another window',()=>{const app=boot(seed());app.node('#friendPrice').value='1100';assert.ok(app.node('#settingsForm').events.input);app.node('#settingsForm').events.input();app.run('data.settings.friendPrice=1400');app.node('#settingsForm').events.change();assert.equal(app.run('data.settings.friendPrice'),1400);assert.equal(app.node('#friendPrice').value,'1100');});
+test('a booking form cannot undo a payment update received from another window',()=>{const app=boot(seed());app.run("editBooking('b1')");app.node('#notes').value='Min kladde';app.run('saveDraft()');const newer=seed();newer.bookings[0].depositPaid=true;app.store.set(KEY,JSON.stringify(newer));app.events.get('storage')({key:KEY});app.node('#bookingForm').onsubmit({preventDefault(){}});assert.equal(JSON.parse(app.store.get(KEY)).bookings[0].depositPaid,true);assert.equal(JSON.parse(app.store.get('hjortemosen_booking_draft_v1')).notes,'Min kladde');});
+test('submitting a stale blacklist form preserves a newer draft from another window',()=>{const app=boot(seed());app.node('#blName').value='A';app.node('#blHouse').value='7';app.node('#blReason').value='A reason';app.node('#blacklistForm').events.input();const newer=JSON.stringify({name:'B',house:'8',reason:'B reason'});app.store.set('hjortemosen_blacklist_draft_v1',newer);app.node('#blacklistForm').onsubmit({preventDefault(){}});assert.equal(app.store.get('hjortemosen_blacklist_draft_v1'),newer);});
