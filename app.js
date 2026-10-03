@@ -1,11 +1,11 @@
 'use strict';
-const APP_VERSION='2.1.2';
+const APP_VERSION='2.2.0';
 const KEY='hjortemosen_data_v1';
 const DRAFT_KEY='hjortemosen_booking_draft_v1';
 const RECOVERY_KEY='hjortemosen_before_import_v1';
 const defaults=HjortData.defaults;
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-let storageBlocked=false, data=load(), monthCursor=new Date(), deferredPrompt=null, formHydrating=false, draftBlocked=false, draftBaseRaw=null, pendingImport=null, toastTimer;
+let storageBlocked=false, data=load(), monthCursor=new Date(), deferredPrompt=null, formHydrating=false, draftBlocked=false, draftBaseRaw=null, pendingImport=null, legacyBookingType=null, printTitle=null, toastTimer;
 function load(){try { const raw=localStorage.getItem(KEY);return raw?HjortData.validate(JSON.parse(raw)):HjortData.clone(defaults); }catch{storageBlocked=true;return HjortData.clone(defaults);}}
 function stored(key){try{return localStorage.getItem(key);}catch{return null;}}
 function storageError(text){$('#storageError').textContent=text;$('#storageError').classList.remove('hidden');}
@@ -24,9 +24,10 @@ function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show')
 function go(id){$$('.view').forEach(v=>v.classList.toggle('active',v.id===id));$$('[data-view]').forEach(b=>{b.classList.toggle('active',b.dataset.view===id);b.setAttribute('aria-current',b.dataset.view===id?'page':'false');});if(id==='calendar'){renderCalendar();bindBookingButtons();}window.scrollTo({top:0,behavior:'instant'});}
 $$('[data-view]').forEach(b=>b.onclick=()=>go(b.dataset.view));
 $$('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
-function typeLabel(t){return t==='member'?'Haveforeningsmedlem':t==='friend'?'Ven':'Anden lejer';}
+function typeLabel(t){return t==='member'?'Haveforeningsmedlem':t==='friend'?'Ven':t==='board'?'Bestyrelsesmedlem':'Tidligere lejertype';}
+function isFreeBoard(b){return b.type==='board'&&!Number(b.price)&&!Number(b.deposit);}
 function isBlacklisted(name,gardenNo=''){return Boolean(HjortData.blocked(data.blacklist,name,gardenNo));}
-function paymentBadge(b){return `<span class="badge ${HjortData.outstanding(b)?'unpaid':'paid'}">${HjortData.outstanding(b)?'Mangler betaling':'Alt betalt'}</span>`;}
+function paymentBadge(b){return `<span class="badge ${HjortData.outstanding(b)?'unpaid':'paid'}">${isFreeBoard(b)?'Gratis':HjortData.outstanding(b)?'Mangler betaling':'Alt betalt'}</span>`;}
 function renderStats(){
  const future=data.bookings.filter(b=>b.date>=isoLocal(new Date()));
  const unpaid=data.bookings.filter(b=>HjortData.outstanding(b)>0);
@@ -36,7 +37,7 @@ function renderStats(){
  $('#nextBooking').classList.toggle('is-empty',!next);
  $('#nextBooking').innerHTML=next?`<span class="eyebrow">NÆSTE BOOKING</span><h3>${esc(next.name)}</h3><p>${fmtDate(next.date)}</p><div class="next-bottom">${paymentBadge(next)}<button class="text-button" data-edit="${esc(next.id)}">Se booking <span aria-hidden="true">↗</span></button></div>`:'<span class="eyebrow">PLADS TIL FÆLLESSKAB</span><h3>Den næste gode stund</h3><p>Opret en booking, når fælleshuset skal danne rammen.</p><button class="secondary" data-new>Opret den første booking <span aria-hidden="true">↗</span></button>';
 }
-function bookingRow(b){const day=new Date(b.date+'T12:00:00');return `<button class="booking-row" data-edit="${esc(b.id)}"><span class="date-tile"><small>${new Intl.DateTimeFormat('da-DK',{month:'short'}).format(day).replace('.','')}</small><strong>${day.getDate()}</strong></span><span class="row-person"><strong>${esc(b.name)}</strong><small>${b.houseNo?'Have nummer '+esc(b.houseNo)+' · ':''}${typeLabel(b.type)}</small><span class="payment-detail">Leje: ${b.paid?'betalt':'ikke betalt'} · Depositum: ${b.depositPaid||!Number(b.deposit)?'betalt':'ikke betalt'}</span></span><span class="row-end">${paymentBadge(b)}<strong>${money(b.price)}</strong></span><span class="row-arrow" aria-hidden="true">›</span></button>`;}
+function bookingRow(b){const day=new Date(b.date+'T12:00:00');return `<button class="booking-row" data-edit="${esc(b.id)}"><span class="date-tile"><small>${new Intl.DateTimeFormat('da-DK',{month:'short'}).format(day).replace('.','')}</small><strong>${day.getDate()}</strong></span><span class="row-person"><strong>${esc(b.name)}</strong><small>${b.houseNo?'Have nummer '+esc(b.houseNo)+' · ':''}${typeLabel(b.type)}</small><span class="payment-detail">${isFreeBoard(b)?'Gratis · uden depositum':`Leje: ${b.paid?'betalt':'ikke betalt'} · Depositum: ${b.depositPaid||!Number(b.deposit)?'betalt':'ikke betalt'}`}</span></span><span class="row-end">${paymentBadge(b)}<strong>${money(b.price)}</strong></span><span class="row-arrow" aria-hidden="true">›</span></button>`;}
 function renderUpcoming(){
  const q=$('#bookingSearch').value.trim().toLocaleLowerCase('da'),filter=$('#bookingFilter').value||'upcoming';
  const arr=[...data.bookings].filter(b=>(filter==='all'||(filter==='unpaid'?HjortData.outstanding(b)>0:b.date>=isoLocal(new Date())))&&(!q||`${b.name} ${b.houseNo} ${b.date}`.toLocaleLowerCase('da').includes(q))).sort((a,b)=>a.date.localeCompare(b.date));
@@ -49,7 +50,7 @@ function renderCalendar(){
  const y=monthCursor.getFullYear(),m=monthCursor.getMonth();$('#monthLabel').textContent=new Intl.DateTimeFormat('da-DK',{month:'long',year:'numeric'}).format(monthCursor);
  const first=(new Date(y,m,1).getDay()+6)%7,days=new Date(y,m+1,0).getDate();let html='';
  for(let i=0;i<first;i++)html+='<div class="day empty"></div>';
- for(let d=1;d<=days;d++){const date=isoLocal(new Date(y,m,d)),b=data.bookings.find(x=>x.date===date),today=date===isoLocal(new Date());html+=`<button class="day ${b?(HjortData.outstanding(b)?'unpaid':'booked'):''} ${today?'today':''}" data-date="${date}" aria-label="${fmtDate(date)} · ${b?'Booket af '+esc(b.name)+(HjortData.outstanding(b)?' · mangler betaling':' · betalt'):'Ledig'}"><span class="date">${d}</span>${b?`<span class="who">${esc(b.name)}</span><i class="calendar-mark" aria-hidden="true"></i>`:''}</button>`;}
+ for(let d=1;d<=days;d++){const date=isoLocal(new Date(y,m,d)),b=data.bookings.find(x=>x.date===date),today=date===isoLocal(new Date());html+=`<button class="day ${b?(HjortData.outstanding(b)?'unpaid':'booked'):''} ${today?'today':''}" data-date="${date}" aria-label="${fmtDate(date)} · ${b?'Booket af '+esc(b.name)+(isFreeBoard(b)?' · gratis':HjortData.outstanding(b)?' · mangler betaling':' · betalt'):'Ledig'}"><span class="date">${d}</span>${b?`<span class="who">${esc(b.name)}</span><i class="calendar-mark" aria-hidden="true"></i>`:''}</button>`;}
  $('#calendarGrid').innerHTML=html;
  $$('.day[data-date]').forEach(el=>el.onclick=()=>{const b=data.bookings.find(x=>x.date===el.dataset.date);b?editBooking(b.id):newBooking(el.dataset.date);});
  const arr=data.bookings.filter(b=>b.date.slice(0,7)===isoLocal(new Date(y,m,1)).slice(0,7)).sort((a,b)=>a.date.localeCompare(b.date));
@@ -58,6 +59,32 @@ function renderCalendar(){
 $('#prevMonth').onclick=()=>{monthCursor=new Date(monthCursor.getFullYear(),monthCursor.getMonth()-1,1);renderCalendar();bindBookingButtons();};
 $('#nextMonth').onclick=()=>{monthCursor=new Date(monthCursor.getFullYear(),monthCursor.getMonth()+1,1);renderCalendar();bindBookingButtons();};
 $('#todayMonth').onclick=()=>{monthCursor=new Date();renderCalendar();bindBookingButtons();};
+function calendarPrintMarkup(){
+ const y=monthCursor.getFullYear(),m=monthCursor.getMonth(),first=(new Date(y,m,1).getDay()+6)%7,days=new Date(y,m+1,0).getDate();
+ const label=new Intl.DateTimeFormat('da-DK',{month:'long',year:'numeric'}).format(monthCursor);
+ const monthBookings=data.bookings.filter(b=>b.date.slice(0,7)===isoLocal(new Date(y,m,1)).slice(0,7)),bookings=new Map();
+ for(const booking of monthBookings){if(!bookings.has(booking.date))bookings.set(booking.date,[]);bookings.get(booking.date).push(booking);}
+ const cells=[];
+ for(let i=0;i<Math.ceil((first+days)/7)*7;i++){
+  const day=i-first+1;
+  if(day<1||day>days){cells.push('<td class="print-day empty"></td>');continue;}
+  const entries=bookings.get(isoLocal(new Date(y,m,day)))||[];
+  const content=entries.map(booking=>`<div class="print-booking"><strong class="print-name">${esc(booking.name)}</strong>${booking.houseNo?`<span class="print-garden">Have nr. ${esc(booking.houseNo)}</span>`:''}<span class="print-status">${isFreeBoard(booking)?'Gratis':HjortData.outstanding(booking)?'Mangler betaling':'Betalt'}</span></div>`).join('');
+  cells.push(`<td class="print-day ${entries.length?'is-booked':''}"><span class="print-date">${day}</span>${content||'<span class="print-status">Ledig</span>'}</td>`);
+ }
+ const rows=[];for(let i=0;i<cells.length;i+=7)rows.push('<tr>'+cells.slice(i,i+7).join('')+'</tr>');
+ return `<header class="print-heading"><div><p>H/F HJORTEMOSEN</p><h1>Bookingkalender</h1></div><div><h2>${esc(label)}</h2><p>${monthBookings.length} ${monthBookings.length===1?'booking':'bookinger'}</p></div></header><table class="print-calendar"><thead><tr>${['Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag','Søndag'].map(d=>'<th scope="col">'+d+'</th>').join('')}</tr></thead><tbody>${rows.join('')}</tbody></table><footer class="print-footer">Hjortemosens fælleshus · ${esc(label)} · Bookinger og betalingsstatus på udskrivningstidspunktet</footer>`;
+}
+function prepareCalendarPrint(){
+ $('#calendarPrint').innerHTML=calendarPrintMarkup();
+ if(printTitle===null)printTitle=document.title;
+ document.title='Hjortemosen-kalender-'+isoLocal(new Date(monthCursor.getFullYear(),monthCursor.getMonth(),1)).slice(0,7);
+ document.body.classList.add('printing-calendar');
+}
+function finishCalendarPrint(){document.body.classList.remove('printing-calendar');if(printTitle!==null){document.title=printTitle;printTitle=null;}}
+$('#printCalendar').onclick=()=>{prepareCalendarPrint();try{window.print();}catch{finishCalendarPrint();toast('Udskriftsmenuen kunne ikke åbnes. Prøv igen i Safari.');}};
+window.addEventListener('beforeprint',()=>{if($('#calendar').classList.contains('active')||document.body.classList.contains('printing-calendar'))prepareCalendarPrint();});
+window.addEventListener('afterprint',finishCalendarPrint);
 function renterBookings(r){return data.bookings.filter(b=>HjortData.normalize(b.name)===HjortData.normalize(r.name)&&HjortData.normalize(b.houseNo)===HjortData.normalize(r.houseNo)).sort((a,b)=>b.date.localeCompare(a.date));}
 function renderRenters(){
  const q=$('#renterSearch').value.trim().toLocaleLowerCase('da');const arr=[...data.renters].filter(r=>!q||`${r.name} ${r.houseNo||''} ${r.phone||''} ${r.email||''}`.toLocaleLowerCase('da').includes(q)).sort((a,b)=>a.name.localeCompare(b.name,'da'));
@@ -68,8 +95,28 @@ function renderRenters(){
 $('#renterSearch').oninput=()=>{renderRenters();bindBookingButtons();};
 function renderSavedRenter(){const sel=$('#savedRenter'),selected=sel.value;sel.innerHTML='<option value="">Vælg en lejer eller skriv oplysningerne nedenfor</option>'+[...data.renters].sort((a,b)=>a.name.localeCompare(b.name,'da')).map(r=>`<option value="${esc(r.id)}">${esc(r.name)}${r.houseNo?' · Have nummer '+esc(r.houseNo):''}</option>`).join('');sel.value=selected;}
 $('#savedRenter').onchange=e=>{const r=data.renters.find(x=>x.id===e.target.value);if(r)fillRenter(r);};
-function fillRenter(r){if(!r)return;formHydrating=true;for(const k of ['name','houseNo','phone','email','address'])$('#'+k).value=r[k]||'';const radio=$(`[name=renterType][value="${['member','friend','other'].includes(r.type)?r.type:'member'}"]`);if(radio)radio.checked=true;applyPrice();checkWarning();formHydrating=false;scheduleDraftSave();}
-function applyPrice(){const type=$('[name=renterType]:checked').value;$('#price').value=data.settings[type==='member'?'memberPrice':type==='friend'?'friendPrice':'otherPrice'];if(!formHydrating)scheduleDraftSave();}
+function currentRenterType(){return $('[name=renterType]:checked')?.value||legacyBookingType||'member';}
+function selectRenterType(type,keepLegacy=false){
+ legacyBookingType=keepLegacy&&type==='other'?'other':null;
+ const selected=['member','friend','board'].includes(type)?type:type==='other'?'friend':'member';
+ $$('[name=renterType]').forEach(r=>r.checked=!legacyBookingType&&r.value===selected);
+ $('#legacyTypeNote').classList.toggle('hidden',!legacyBookingType);
+}
+function syncPaymentMode(){
+ const board=currentRenterType()==='board';
+ for(const field of ['price','deposit']){$('#'+field).readOnly=board;if(board)$('#'+field).value=0;}
+ $('#boardPriceNote').classList.toggle('hidden',!board);
+ $('.payment-checks').classList.toggle('hidden',board);
+ $('#paid').disabled=board;$('#depositPaid').disabled=board;
+}
+function fillRenter(r){if(!r)return;formHydrating=true;for(const k of ['name','houseNo','phone','email','address'])$('#'+k).value=r[k]||'';selectRenterType(r.type);applyPrice();checkWarning();formHydrating=false;scheduleDraftSave();}
+function applyPrice(){
+ const wasBoard=$('#price').readOnly,type=$('[name=renterType]:checked')?.value||'member';
+ legacyBookingType=null;$('#legacyTypeNote').classList.add('hidden');
+ $('#price').value=type==='board'?0:data.settings[type==='friend'?'friendPrice':'memberPrice'];
+ if(type==='board')$('#deposit').value=0;else if(wasBoard)$('#deposit').value=data.settings.deposit;
+ syncPaymentMode();if(!formHydrating)scheduleDraftSave();
+}
 $$('[name=renterType]').forEach(r=>r.onchange=applyPrice);
 function checkWarning(){
  const name=$('#name').value,gardenNo=$('#houseNo').value,date=$('#bookingDate').value,id=$('#bookingId').value,msgs=[];let blockedSave=false;
@@ -83,7 +130,7 @@ function checkWarning(){
  const w=$('#bookingWarning');w.textContent=msgs.join(' ');w.classList.toggle('hidden',!msgs.length);$('#submitBooking').disabled=blockedSave||storageBlocked;return !blockedSave;
 }
 ['#name','#houseNo','#bookingDate'].forEach(s=>$(s).addEventListener('input',checkWarning));
-function collectDraft(){return {id:$('#bookingId').value,date:$('#bookingDate').value,name:$('#name').value,houseNo:$('#houseNo').value,phone:$('#phone').value,email:$('#email').value,address:$('#address').value,type:$('[name=renterType]:checked')?.value||'member',price:$('#price').value,deposit:$('#deposit').value,paid:$('#paid').checked,depositPaid:$('#depositPaid').checked,saveRenter:$('#saveRenter').checked,notes:$('#notes').value,savedAt:new Date().toISOString()};}
+function collectDraft(){const type=currentRenterType(),board=type==='board';return {id:$('#bookingId').value,date:$('#bookingDate').value,name:$('#name').value,houseNo:$('#houseNo').value,phone:$('#phone').value,email:$('#email').value,address:$('#address').value,type,price:board?'0':$('#price').value,deposit:board?'0':$('#deposit').value,paid:$('#paid').checked,depositPaid:$('#depositPaid').checked,saveRenter:$('#saveRenter').checked,notes:$('#notes').value,savedAt:new Date().toISOString()};}
 function hasDraftContent(d){return Boolean(d.id||d.date||['name','houseNo','phone','email','address','notes'].some(k=>String(d[k]||'').trim())||(d.type&&d.type!=='member')||(d.price!==undefined&&Number(d.price)!==data.settings.memberPrice)||(d.deposit!==undefined&&Number(d.deposit)!==data.settings.deposit)||d.paid||d.depositPaid||d.saveRenter===false);}
 function setAutoSaveStatus(text,isSaved=true){const el=$('#autoSaveStatus');el.textContent=text;el.classList.toggle('pending',!isSaved);$('#draftBanner').classList.toggle('hidden',!hasDraftContent(collectDraft()));}
 function saveDraft(manual=false){
@@ -96,7 +143,7 @@ function saveDraft(manual=false){
  catch{setAutoSaveStatus('Kladde kunne ikke gemmes. Lad formularen være åben og frigør lagerplads.',false);return false;}
 }
 function scheduleDraftSave(){if(!formHydrating)saveDraft(false);}
-function hydrate(d){formHydrating=true;for(const k of ['name','houseNo','phone','email','address','notes'])$('#'+k).value=d[k]||'';$('#bookingId').value=d.id||'';$('#bookingDate').value=d.date||'';$('#bookingFormTitle').textContent=d.id?'Rediger booking':'Ny booking';const radio=$(`[name=renterType][value="${['member','friend','other'].includes(d.type)?d.type:'member'}"]`);if(radio)radio.checked=true;$('#price').value=d.price??data.settings.memberPrice;$('#deposit').value=d.deposit??data.settings.deposit;$('#paid').checked=!!d.paid;$('#depositPaid').checked=!!d.depositPaid;$('#saveRenter').checked=d.saveRenter!==false;$('#deleteBooking').classList.toggle('hidden',!d.id);formHydrating=false;checkWarning();}
+function hydrate(d){formHydrating=true;for(const k of ['name','houseNo','phone','email','address','notes'])$('#'+k).value=d[k]||'';$('#bookingId').value=d.id||'';$('#bookingDate').value=d.date||'';$('#bookingFormTitle').textContent=d.id?'Rediger booking':'Ny booking';selectRenterType(d.type,true);$('#price').value=d.price??data.settings.memberPrice;$('#deposit').value=d.deposit??data.settings.deposit;$('#paid').checked=!!d.paid;$('#depositPaid').checked=!!d.depositPaid;$('#saveRenter').checked=d.saveRenter!==false;$('#deleteBooking').classList.toggle('hidden',!d.id);syncPaymentMode();formHydrating=false;checkWarning();}
 function restoreDraft(){try{const raw=localStorage.getItem(DRAFT_KEY);draftBaseRaw=raw;if(!raw)return;const d=JSON.parse(raw);if(!d||typeof d!=='object'||!hasDraftContent(d))return;hydrate(d);setAutoSaveStatus('Din kladde er gendannet. Fortsæt, hvor du slap.');}catch{draftBlocked=true;setAutoSaveStatus('Den gemte kladde kunne ikke læses. Den oprindelige kladde er bevaret.',false);}}
 function clearDraft(force=false){try{if(!force&&localStorage.getItem(DRAFT_KEY)!==draftBaseRaw)return false;localStorage.removeItem(DRAFT_KEY);draftBaseRaw=null;draftBlocked=false;setAutoSaveStatus('Kladde gemmes automatisk på denne enhed');return true;}catch{toast('Kunne ikke slette kladden.');return false;}}
 function canReplaceDraft(){const changed=stored(DRAFT_KEY)!==draftBaseRaw;if(!hasDraftContent(collectDraft())&&!draftBlocked&&!changed)return true;const accepted=confirm(changed?'Kladden er ændret i et andet vindue. Vil du kassere den og åbne en anden booking?':'Du har en kladde. Vil du kassere den og åbne en anden booking?');if(accepted&&changed)draftBaseRaw=stored(DRAFT_KEY);return accepted;}
@@ -124,15 +171,15 @@ function renderBlacklist(){
 }
 $('#addBlacklist').onclick=()=>$('#blacklistDialog').showModal();$('#cancelBlacklist').onclick=()=>$('#blacklistDialog').close();
 $('#blacklistForm').onsubmit=e=>{e.preventDefault();const name=$('#blName').value.trim(),house=$('#blHouse').value.trim(),reason=$('#blReason').value.trim();if(!name||!reason)return;const next=HjortData.clone(data);next.blacklist.push({id:uid(),name,house,reason});if(save(next)){$('#blacklistDialog').close();$('#blacklistForm').reset();checkWarning();toast('Tilføjet til blacklist');}};
-function renderSettings(){for(const field of ['memberPrice','friendPrice','otherPrice'])$('#'+field).value=data.settings[field];$('#defaultDeposit').value=data.settings.deposit;}
-$('#settingsForm').onsubmit=e=>{e.preventDefault();const next=HjortData.clone(data);next.settings={...data.settings,memberPrice:Number($('#memberPrice').value),friendPrice:Number($('#friendPrice').value),otherPrice:Number($('#otherPrice').value),deposit:Number($('#defaultDeposit').value)};try{HjortData.validate(next);if(save(next))toast('Standardpriser gemt');}catch(err){toast(err.message);}};
+function renderSettings(){for(const field of ['memberPrice','friendPrice'])$('#'+field).value=data.settings[field];$('#defaultDeposit').value=data.settings.deposit;}
+$('#settingsForm').onsubmit=e=>{e.preventDefault();const next=HjortData.clone(data);next.settings={...data.settings,memberPrice:Number($('#memberPrice').value),friendPrice:Number($('#friendPrice').value),deposit:Number($('#defaultDeposit').value)};try{HjortData.validate(next);if(save(next))toast('Standardpriser gemt');}catch(err){toast(err.message);}};
 function backupName(){return `hjortemosen-backup-${isoLocal(new Date())}.json`;}
 function backupContents(){return storageBlocked?localStorage.getItem(KEY)||'{}':JSON.stringify(data,null,2);}
 function download(blob,name){const a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
 function downloadBackup(){download(new Blob([backupContents()],{type:'application/json'}),backupName());toast('Sikkerhedskopi eksporteret');}
 $('#exportData').onclick=downloadBackup;
 $('#shareData').onclick=async()=>{const file=new File([backupContents()],backupName(),{type:'application/json'});try{if(navigator.share&&navigator.canShare?.({files:[file]})){await navigator.share({title:'Hjortemosen Booking – sikkerhedskopi',files:[file]});toast('Sikkerhedskopi delt');}else downloadBackup();}catch(err){if(err.name!=='AbortError')downloadBackup();}};
-function bookingOverview(){const arr=[...data.bookings].filter(b=>b.date>=isoLocal(new Date())).sort((a,b)=>a.date.localeCompare(b.date));const lines=['HJORTEMOSEN – KOMMENDE BOOKINGER',''];if(!arr.length)lines.push('Ingen kommende bookinger.');for(const b of arr){lines.push(`${fmtDate(b.date)} · ${b.name}${b.houseNo?' · Have nummer '+b.houseNo:''}`,`${typeLabel(b.type)} · Leje ${money(b.price)} (${b.paid?'betalt':'ikke betalt'}) · Depositum ${money(b.deposit)} (${b.depositPaid?'betalt':'ikke betalt'})`);if(b.notes)lines.push('Bemærkning: '+b.notes);lines.push('');}return lines.join('\n');}
+function bookingOverview(){const arr=[...data.bookings].filter(b=>b.date>=isoLocal(new Date())).sort((a,b)=>a.date.localeCompare(b.date));const lines=['HJORTEMOSEN – KOMMENDE BOOKINGER',''];if(!arr.length)lines.push('Ingen kommende bookinger.');for(const b of arr){lines.push(`${fmtDate(b.date)} · ${b.name}${b.houseNo?' · Have nummer '+b.houseNo:''}`,`${isFreeBoard(b)?'Bestyrelsesmedlem · Gratis · uden depositum':`${typeLabel(b.type)} · Leje ${money(b.price)} (${b.paid?'betalt':'ikke betalt'}) · Depositum ${money(b.deposit)} (${b.depositPaid?'betalt':'ikke betalt'})`}`);if(b.notes)lines.push('Bemærkning: '+b.notes);lines.push('');}return lines.join('\n');}
 $('#shareOverview').onclick=async()=>{const text=bookingOverview();try{if(navigator.share)await navigator.share({title:'Hjortemosen – bookingoversigt',text});else{download(new Blob([text],{type:'text/plain;charset=utf-8'}),'hjortemosen-bookingoversigt.txt');toast('Bookingoversigt eksporteret');}}catch(err){if(err.name!=='AbortError')download(new Blob([text],{type:'text/plain;charset=utf-8'}),'hjortemosen-bookingoversigt.txt');}};
 $('#importData').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>10000000)throw new Error('Filen er for stor. Vælg en sikkerhedskopi under 10 MB.');pendingImport=HjortData.validate(JSON.parse(await file.text()),true);$('#importSummary').textContent=`${pendingImport.bookings.length} bookinger, ${pendingImport.renters.length} lejere og ${pendingImport.blacklist.length} personer på blacklist.`;$('#importError').classList.add('hidden');$('#importDialog').showModal();}catch(err){pendingImport=null;toast('Import afvist: '+err.message);}finally{e.target.value='';}};
 $('#cancelImport').onclick=()=>{pendingImport=null;$('#importDialog').close();};

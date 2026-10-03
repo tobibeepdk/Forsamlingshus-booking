@@ -168,3 +168,39 @@ input,select,textarea{min-width:0;max-width:100%}
   .welcome-copy h2{font-size:28px}
   .header-brand .brand-mark{width:32px;height:32px}
 }
+
+/* Calendar printing and the free board-member category. */
+.calendar-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end}
+.calendar-actions button{min-height:48px;white-space:nowrap}
+.calendar-print-help{margin:-10px 0 20px}
+.segmented{grid-template-columns:2fr 1fr 1.9fr}
+input[readonly]{background:#f1f4ed;color:var(--green)}
+#calendarPrint{display:none}
+@media(max-width:700px){
+  #calendar .page-heading{flex-wrap:wrap}
+  .calendar-actions{justify-content:flex-start}
+}
+@media(max-width:480px){.segmented{grid-template-columns:1fr}}
+@page{size:A4 landscape;margin:10mm}
+@media print{
+  body.printing-calendar{background:white;color:#17241b;font-family:Arial,sans-serif;font-size:8.5pt;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body.printing-calendar>*{display:none!important}
+  body.printing-calendar>#calendarPrint{display:block!important;width:100%}
+  .print-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:8mm;margin-bottom:5mm}
+  .print-heading p{font-size:8pt;line-height:1.3;margin:0}
+  .print-heading h1{font-family:Georgia,serif;font-size:22pt;letter-spacing:0;line-height:1.1;margin:2mm 0 0}
+  .print-heading h2{font-family:Arial,sans-serif;font-size:16pt;text-transform:capitalize;margin:0 0 2mm}
+  .print-heading>div:last-child{text-align:right}
+  .print-calendar{width:100%;height:150mm;table-layout:fixed;border-collapse:collapse}
+  .print-calendar tr{break-inside:avoid}
+  .print-calendar th{font-size:9pt;text-align:left;height:7mm;background:#eef2e8;border:1px solid #aeb9aa;padding:1.5mm 2mm}
+  .print-calendar td{padding:2mm;vertical-align:top;border:1px solid #aeb9aa;overflow-wrap:anywhere}
+  .print-calendar .is-booked{background:#f2f5ed}
+  .print-calendar .empty{background:#f8f9f7}
+  .print-date{display:block;font-size:11pt;font-weight:bold;margin-bottom:1.5mm}
+  .print-name{display:block;font-size:9pt;line-height:1.25}
+  .print-booking+.print-booking{border-top:1px solid #aeb9aa;margin-top:2mm;padding-top:2mm}
+  .print-garden{display:block;font-size:8pt;line-height:1.25;margin-top:1mm}
+  .print-status{display:block;font-size:8pt;line-height:1.25;margin-top:1mm}
+  .print-footer{display:block;font-size:7.5pt;line-height:1.3;margin-top:3mm;text-align:center}
+}
