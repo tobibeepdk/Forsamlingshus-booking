@@ -1,5 +1,5 @@
 'use strict';
-const APP_VERSION='2.1.1';
+const APP_VERSION='2.1.2';
 const KEY='hjortemosen_data_v1';
 const DRAFT_KEY='hjortemosen_booking_draft_v1';
 const RECOVERY_KEY='hjortemosen_before_import_v1';
