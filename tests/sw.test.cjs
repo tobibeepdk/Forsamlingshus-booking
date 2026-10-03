@@ -12,7 +12,7 @@ function worker(seed={},clients=[]) {
  return {bins,event,request,offline:()=>offline=true,skipped:()=>skipped};
 }
 test('all installed app files and PDF contracts are served offline under a repository path',async()=>{
- const w=worker();await w.event('install');w.offline();for(const asset of ['./','./index.html','./styles.css?v=2.4.0','./data.js?v=2.4.0','./app.js?v=2.4.0','./contract-libs.js?v=2.4.0','./contracts.js?v=2.4.0','./contract-ui.js?v=2.4.0','./signature-pad.js?v=2.4.0','./faelleshus.jpg?v=2.4.0','./icon-192.png?v=2.4.0','./icon-512.png?v=2.4.0','./apple-touch-icon.png?v=2.4.0','./favicon.svg?v=2.4.0','./kontrakt-1000.pdf?v=2.4.0','./kontrakt-1500.pdf?v=2.4.0','./kontrakt-1000.docx?v=2.4.0']){const r=await w.request(asset);assert.equal(r.status,200);assert.ok((await r.arrayBuffer()).byteLength>0);}const fallback=await w.request('./unavailable','navigate');assert.equal(fallback.status,200);assert.equal((await w.request('./missing.png')).status,503);
+ const w=worker();await w.event('install');w.offline();for(const asset of ['./','./index.html','./styles.css?v=2.4.1','./data.js?v=2.4.1','./app.js?v=2.4.1','./contract-libs.js?v=2.4.1','./contracts.js?v=2.4.1','./contract-ui.js?v=2.4.1','./signature-pad.js?v=2.4.1','./faelleshus.jpg?v=2.4.1','./icon-192.png?v=2.4.1','./icon-512.png?v=2.4.1','./apple-touch-icon.png?v=2.4.1','./favicon.svg?v=2.4.1','./kontrakt-1000.pdf?v=2.4.1','./kontrakt-1500.pdf?v=2.4.1','./kontrakt-1000.docx?v=2.4.1']){const r=await w.request(asset);assert.equal(r.status,200);assert.ok((await r.arrayBuffer()).byteLength>0);}const fallback=await w.request('./unavailable','navigate');assert.equal(fallback.status,200);assert.equal((await w.request('./missing.png')).status,503);
 });
 test('activation preserves legacy caches belonging to another repository',async()=>{
  const w=worker({'hjortemosen-pwa-v1.4':{'https://example.test/other/index.html':'other'},'different-app-v3':{'https://example.test/third/':'third'}});await w.event('install');await w.event('activate');assert.ok(w.bins.has('hjortemosen-pwa-v1.4'));assert.ok(w.bins.has('different-app-v3'));
@@ -25,11 +25,11 @@ test('obsolete scoped cache remains until every open page reports the new versio
  const clients=[{id:'first',url:scope,postMessage(){}},{id:'second',url:scope,postMessage(){}}];
  const w=worker({[oldCache]:{[scope+'app.js?v=1.9.0']:'old-script'}},clients);
  await w.event('install');await w.event('activate');
- await w.event('message',{source:clients[0],data:{type:'CLIENT_VERSION',version:'2.4.0'}});
+ await w.event('message',{source:clients[0],data:{type:'CLIENT_VERSION',version:'2.4.1'}});
  assert.ok(w.bins.has(oldCache));
  await w.event('message',{source:clients[1],data:{type:'CLIENT_VERSION',version:'1.9.0'}});
  assert.ok(w.bins.has(oldCache));
- await w.event('message',{source:clients[1],data:{type:'CLIENT_VERSION',version:'2.4.0'}});
+ await w.event('message',{source:clients[1],data:{type:'CLIENT_VERSION',version:'2.4.1'}});
  assert.equal(w.bins.has(oldCache),false);
 });
 test('legacy shared cache loses only requests belonging to this app',async()=>{
