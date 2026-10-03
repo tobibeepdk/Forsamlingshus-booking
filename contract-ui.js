@@ -1,11 +1,25 @@
-(function(){
+(async function(){
+ if(window.HjortAppReady)await window.HjortAppReady;
  'use strict';
  const form=$('#contractForm'),template=$('#contractTemplate'),booking=$('#contractBooking'),status=$('#contractStatus'),error=$('#contractError');
  const fields=Object.keys(HjortContracts.labels),input=key=>$('#contract-'+key);
- let ready=null,revision=0,busy=false,bookingSnapshot='';
+ let ready=null,revision=0,busy=false,bookingSnapshot='',restoring=false,draftBlocked=false,baseRaw=null,lastInkSave=0;
+ const draftKey=HjortBackup.keys.contract;
+ function autoStatus(text){$('#contractAutoSaveStatus').textContent=text;}
+ function saveContract(){
+  if(restoring||draftBlocked)return false;
+  try{
+   HjortBackup.ensureWritable();if(localStorage.getItem(draftKey)!==baseRaw){autoStatus('Kontraktkladden er ændret i et andet vindue. Genindlæs for at fortsætte med den gemte version.');return false;}
+   const d={template:template.value,bookingId:booking.value,bookingSnapshot,values:Object.fromEntries(fields.map(key=>[key,input(key).value])),strokes:signaturePad.getStrokes(),savedAt:new Date().toISOString()};
+   const hasContent=d.bookingId||d.template!=='member-pdf'||d.strokes.length||fields.some(key=>key!=='agreementDate'&&d.values[key].trim());
+   if(hasContent){HjortBackup.validateDraft('contract',d);const raw=JSON.stringify(d);if(!baseRaw||JSON.stringify({...JSON.parse(baseRaw),savedAt:''})!==JSON.stringify({...d,savedAt:''})){localStorage.setItem(draftKey,raw);baseRaw=raw;}autoStatus('Kontraktkladde og underskrift gemt automatisk på denne iPad.');}
+   else{localStorage.removeItem(draftKey);baseRaw=null;autoStatus('Kontraktkladden gemmes automatisk på denne enhed.');}
+   window.HjortAutoBackup?.queue();return true;
+  }catch{autoStatus('Kontraktkladden kunne ikke gemmes. Lad formularen være åben og frigør lagerplads.');return false;}
+ }
  function snapshot(b){return b?JSON.stringify(Object.fromEntries(['name','phone','address','email','date','price','deposit','type'].map(key=>[key,b[key]]))):'';}
  function invalidate(){revision++;if(ready)URL.revokeObjectURL(ready.url);ready=null;$('#contractReady').classList.add('hidden');error.classList.add('hidden');status.textContent='Ret oplysningerne, og tryk på Lav udfyldt kontrakt.';}
- const signaturePad=HjortSignature.create($('#signatureCanvas'),hasInk=>{invalidate();$('#signatureStatus').textContent=hasInk?'Underskrift tilføjet.':'Ingen håndskrevet underskrift.';$('#clearSignature').disabled=!hasInk;});
+ const signaturePad=HjortSignature.create($('#signatureCanvas'),(hasInk,detail)=>{invalidate();$('#signatureStatus').textContent=hasInk?'Underskrift tilføjet.':'Ingen håndskrevet underskrift.';$('#clearSignature').disabled=!hasInk;if(!restoring&&(!detail?.drawing||Date.now()-lastInkSave>100)){lastInkSave=Date.now();saveContract();}});
  $('#signatureStatus').textContent='Ingen håndskrevet underskrift.';$('#clearSignature').disabled=true;
  $('#clearSignature').onclick=()=>{signaturePad.clear();};
  function selectedBooking(){return data.bookings.find(b=>b.id===booking.value)||null;}
@@ -17,27 +31,28 @@
  function prefill(){
   invalidate();signaturePad.clear();const b=selectedBooking();bookingSnapshot=snapshot(b);
   if(b){if(Number(b.price)===1500)template.value='friend-pdf';else if(Number(b.price)===1000&&template.value==='friend-pdf')template.value='member-pdf';const values=HjortContracts.fromBooking(b,isoLocal(new Date()));for(const key of fields)input(key).value=values[key];}
-  warning();
+  warning();saveContract();
  }
- function refresh(){
-  const selected=booking.value;
+ function refreshOptions(selected=booking.value){
   booking.innerHTML='<option value="">Udfyld uden en booking</option>'+[...data.bookings].sort((a,b)=>b.date.localeCompare(a.date)).map(b=>`<option value="${esc(b.id)}">${esc(b.date)} · ${esc(b.name)} · ${money(b.price)}</option>`).join('');
   booking.value=data.bookings.some(b=>b.id===selected)?selected:'';
-  const b=selectedBooking(),next=snapshot(b);
+ }
+ function refresh(){
+  refreshOptions();const b=selectedBooking(),next=snapshot(b);
   if(next!==bookingSnapshot){
    const previous=bookingSnapshot?JSON.parse(bookingSnapshot):null;invalidate();signaturePad.clear();
    if(b&&previous){const before=HjortContracts.fromBooking(previous,''),after=HjortContracts.fromBooking(b,'');for(const key of ['name','phone','address','email','rentalDate'])if(input(key).value===before[key])input(key).value=after[key];}
-   bookingSnapshot=next;status.textContent=b?'Bookingoplysningerne er ændret. Dine egne kontraktfelter er bevaret. Kontrollér oplysningerne, og lav kontrakten igen.':'Bookingen findes ikke længere. Kontrollér felterne, før du laver en kontrakt uden booking.';
+   bookingSnapshot=next;saveContract();status.textContent=b?'Bookingoplysningerne er ændret. Dine egne kontraktfelter er bevaret. Kontrollér oplysningerne, og lav kontrakten igen.':'Bookingen findes ikke længere. Kontrollér felterne, før du laver en kontrakt uden booking.';
   }
   warning();
  }
- form.addEventListener('input',()=>{invalidate();signaturePad.clear();warning();});
- template.onchange=()=>{invalidate();signaturePad.clear();warning();};booking.onchange=prefill;
- $$('[data-fill-contract]').forEach(button=>button.onclick=()=>{template.value=button.dataset.fillContract;invalidate();signaturePad.clear();warning();form.scrollIntoView({behavior:'smooth',block:'start'});template.focus({preventScroll:true});});
+ form.addEventListener('input',()=>{invalidate();signaturePad.clear();warning();saveContract();});
+ template.onchange=()=>{invalidate();signaturePad.clear();warning();saveContract();};booking.onchange=prefill;
+ $$('[data-fill-contract]').forEach(button=>button.onclick=()=>{template.value=button.dataset.fillContract;invalidate();signaturePad.clear();warning();saveContract();form.scrollIntoView({behavior:'smooth',block:'start'});template.focus({preventScroll:true});});
  form.onsubmit=async event=>{
   event.preventDefault();if(busy||!form.reportValidity()||warning())return;
   if(signaturePad.isDrawing()){status.textContent='Løft fingeren eller pennen, før du laver kontrakten.';return;}
-  invalidate();const current=revision,id=template.value,values=Object.fromEntries(fields.map(key=>[key,input(key).value]));
+  saveContract();invalidate();const current=revision,id=template.value,values=Object.fromEntries(fields.map(key=>[key,input(key).value]));
   busy=true;$('#makeContract').disabled=true;form.setAttribute('aria-busy','true');status.textContent='Udfylder kontrakten…';
   try{
    const ink=signaturePad.getImage(),config=HjortContracts.templates[id],response=await fetch('./'+config.path+'?v='+APP_VERSION);
@@ -65,7 +80,17 @@
   const field=input(button.dataset.copyRecipient),value=field.value.trim();if(!value){field.focus();toast('Udfyld først modtagerens '+(button.dataset.copyRecipient==='email'?'e-mailadresse':'telefonnummer'));return;}
   try{await navigator.clipboard.writeText(value);toast('Modtageren er kopieret');}catch{field.focus();field.select();toast('Markér og kopiér modtageren fra feltet');}
  });
- $('#clearContract').onclick=()=>{form.reset();signaturePad.clear();booking.value='';template.value='member-pdf';bookingSnapshot='';input('agreementDate').value=isoLocal(new Date());invalidate();warning();};
- input('agreementDate').value=isoLocal(new Date());refresh();
- window.HjortContractUI={refresh};
+ function restoreDraft(){
+  restoring=true;draftBlocked=false;invalidate();form.reset();signaturePad.clear();booking.value='';template.value='member-pdf';bookingSnapshot='';input('agreementDate').value=isoLocal(new Date());
+  refreshOptions('');
+  try{baseRaw=localStorage.getItem(draftKey);if(baseRaw){const d=HjortBackup.validateDraft('contract',JSON.parse(baseRaw));template.value=d.template;booking.value=d.bookingId;bookingSnapshot=d.bookingSnapshot;for(const key of fields)input(key).value=d.values[key];signaturePad.restore(d.strokes);autoStatus('Din kontraktkladde og underskrift er gendannet.');}else autoStatus('Kontraktkladden gemmes automatisk på denne enhed.');}
+  catch{draftBlocked=true;autoStatus('Den gemte kontraktkladde kunne ikke læses. Den er bevaret. Brug Ryd felter for at starte forfra.');}
+  refresh();restoring=false;
+  if(baseRaw&&!draftBlocked)saveContract();
+ }
+ $('#clearContract').onclick=()=>{
+  try{HjortBackup.ensureWritable();if(!draftBlocked&&localStorage.getItem(draftKey)!==baseRaw){autoStatus('Kontraktkladden er ændret i et andet vindue. Genindlæs først.');return;}if(draftBlocked&&!confirm('Kassér den kontraktkladde, der ikke kunne læses?'))return;localStorage.removeItem(draftKey);baseRaw=null;restoreDraft();window.HjortAutoBackup?.queue();}catch{autoStatus('Kontraktkladden kunne ikke ryddes.');}
+ };
+ window.addEventListener('pagehide',saveContract);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveContract();});
+ restoreDraft();window.HjortContractUI={refresh,restore:restoreDraft,save:saveContract};
 })();
