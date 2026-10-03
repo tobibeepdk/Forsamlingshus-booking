@@ -137,13 +137,16 @@ test('an already installing service worker still offers the update when installe
 });
 
 // Breaks caught: charged board bookings, lost legacy agreements, stale printed months.
-test('selecting a board member clears rent and deposit even with custom defaults',()=>{
+test('selecting a board member sets free rent and a fixed 500 deposit even with custom defaults',()=>{
  const d=seed();d.settings.memberPrice=1800;d.settings.deposit=800;const app=boot(d);
  app.node('[name=renterType][value="board"]').checked=true;app.run('applyPrice()');
  assert.equal(Number(app.node('#price').value),0);
- assert.equal(Number(app.node('#deposit').value),0);
+ assert.equal(Number(app.node('#deposit').value),500);
  assert.equal(app.node('#price').readOnly,true);
  assert.equal(app.node('#deposit').readOnly,true);
+ assert.equal(app.node('#paid').disabled,true);
+ assert.equal(app.node('#depositPaid').disabled,false);
+ assert.equal(app.node('.payment-checks').classList.contains('hidden'),false);
 });
 test('switching from board member to friend restores the normal deposit',()=>{
  const app=boot(seed());app.node('[name=renterType][value="board"]').checked=true;app.run('applyPrice()');
@@ -152,15 +155,15 @@ test('switching from board member to friend restores the normal deposit',()=>{
  assert.equal(Number(app.node('#deposit').value),500);
  assert.equal(app.node('#price').readOnly,false);
 });
-test('a board booking is saved and restored without any payable amounts',()=>{
+test('a board booking saves only the 500 deposit as payable and cannot override its amounts',()=>{
  const app=boot(seed());app.node('[name=renterType][value="board"]').checked=true;app.run('applyPrice()');
  app.node('#bookingDate').value='2026-12-20';app.node('#name').value='Bestyrelsesmøde';
- app.node('#price').value='999';app.node('#deposit').value='500';
+ app.node('#price').value='999';app.node('#deposit').value='999';
  app.node('#bookingForm').onsubmit({preventDefault(){}});
  const saved=JSON.parse(app.store.get(KEY));const b=saved.bookings.find(b=>b.date==='2026-12-20');
- assert.equal(b.type,'board');assert.equal(b.price,0);assert.equal(b.deposit,0);
+ assert.equal(b.type,'board');assert.equal(b.price,0);assert.equal(b.deposit,500);
  const restored=boot(saved);assert.equal(restored.run('data.bookings.length'),2);
- assert.equal(restored.run("HjortData.outstanding(data.bookings.find(b=>b.type==='board'))"),0);
+ assert.equal(restored.run("HjortData.outstanding(data.bookings.find(b=>b.type==='board'))"),500);
 });
 test('a free board booking survives backup export and import and is labelled free',()=>{
  const d=seed();d.bookings[0]={...booking,type:'board',price:0,deposit:0,paid:false,depositPaid:false};
@@ -169,10 +172,56 @@ test('a free board booking survives backup export and import and is labelled fre
  assert.match(app.run('bookingRow(data.bookings[0])'),/Gratis/);
  assert.doesNotMatch(app.run('bookingRow(data.bookings[0])'),/ikke betalt/);
 });
-test('restoring a board draft retains its type and zero amounts',()=>{
+test('restoring an old board draft retains its type and applies the 500 deposit',()=>{
  const app=boot(seed(),{...booking,id:'',date:'2026-12-20',type:'board',price:0,deposit:0});
  assert.equal(app.run('collectDraft().type'),'board');
- assert.equal(Number(app.node('#price').value),0);assert.equal(Number(app.node('#deposit').value),0);
+ assert.equal(Number(app.node('#price').value),0);assert.equal(Number(app.node('#deposit').value),500);
+});
+test('board deposit payment can be recorded and survives reopening and a backup round trip',()=>{
+ const d=seed();d.bookings=[{...booking,type:'board',price:0,deposit:500,paid:false,depositPaid:false}];
+ const app=boot(d);assert.equal(app.run('storageBlocked'),false);assert.equal(app.run('HjortData.outstanding(data.bookings[0])'),500);
+ app.run("editBooking('b1')");assert.equal(app.node('#depositPaid').disabled,false);app.node('#depositPaid').checked=true;
+ app.node('#bookingForm').onsubmit({preventDefault(){}});
+ const saved=JSON.parse(app.store.get(KEY));assert.equal(saved.bookings[0].depositPaid,true);assert.equal(saved.bookings[0].deposit,500);
+ const restored=boot(saved);assert.equal(restored.run('HjortData.outstanding(data.bookings[0])'),0);
+ restored.ctx.backup=JSON.parse(restored.run('backupContents()'));
+ assert.equal(restored.run('HjortData.validate(backup,true).bookings[0].depositPaid'),true);
+ assert.doesNotMatch(restored.run('bookingRow(data.bookings[0])'),/Mangler betaling|Leje: ikke betalt/);
+});
+test('unpaid board deposits appear in the list, overview and printed calendar',()=>{
+ const d=seed();d.bookings=[{...booking,type:'board',price:0,deposit:500,paid:false,depositPaid:false}];
+ const app=boot(d);assert.equal(app.run('data.bookings.length'),1);
+ assert.match(app.run('bookingRow(data.bookings[0])'),/Leje: gratis/);assert.match(app.run('bookingRow(data.bookings[0])'),/Mangler betaling/);
+ app.run('renderStats()');assert.match(app.node('#stats').innerHTML,/500 kr\./);
+ assert.match(app.run('bookingOverview()'),/Depositum 500 kr\. \(ikke betalt\)/);
+ assert.match(app.run('bookingOverview()'),/Leje 0 kr\. \(gratis\)/);
+ app.run('monthCursor=new Date(2026,11,1)');assert.match(app.run('calendarPrintMarkup()'),/Mangler betaling/);
+});
+test('old saved board bookings remain readable and receive the deposit when edited and saved',()=>{
+ const d=seed();d.bookings=[{...booking,type:'board',price:0,deposit:0,paid:false,depositPaid:false}];
+ const app=boot(d),original=app.store.get(KEY);app.run("editBooking('b1')");
+ assert.equal(app.node('#deposit').value,500);assert.equal(app.store.get(KEY),original);
+ app.node('#bookingForm').onsubmit({preventDefault(){}});
+ assert.equal(JSON.parse(app.store.get(KEY)).bookings[0].deposit,500);
+});
+test('switching away from board restores custom deposit and leaves rent unpaid',()=>{
+ const d=seed();d.settings.deposit=800;const app=boot(d);
+ app.node('[name=renterType][value="board"]').checked=true;app.run('applyPrice()');
+ app.node('[name=renterType][value="friend"]').checked=true;app.run('applyPrice()');
+ assert.equal(Number(app.node('#deposit').value),800);assert.equal(app.node('#paid').disabled,false);assert.equal(app.run('collectDraft().paid'),false);
+});
+test('a legacy zero-deposit payment flag cannot mark the new 500 deposit as received',()=>{
+ const d=seed();d.bookings=[{...booking,type:'board',price:0,deposit:0,depositPaid:true}];
+ const app=boot(d);app.run("editBooking('b1')");assert.equal(app.node('#depositPaid').checked,false);
+ app.node('#notes').value='Bemærkning';app.node('#bookingForm').onsubmit({preventDefault(){}});
+ const b=JSON.parse(app.store.get(KEY)).bookings[0];assert.equal(b.deposit,500);assert.equal(b.depositPaid,false);
+ assert.equal(app.run('HjortData.outstanding(data.bookings[0])'),500);
+});
+test('restored legacy board drafts clear zero-deposit payment flags but retain received 500 deposits',()=>{
+ const old=boot(seed(),{...booking,id:'',type:'board',price:0,deposit:0,depositPaid:true});
+ assert.equal(old.node('#depositPaid').checked,false);assert.equal(Number(old.node('#deposit').value),500);
+ const current=boot(seed(),{...booking,id:'',type:'board',price:0,deposit:500,depositPaid:true});
+ assert.equal(current.node('#depositPaid').checked,true);assert.equal(Number(current.node('#deposit').value),500);
 });
 test('editing a legacy other agreement preserves its type and negotiated amounts',()=>{
  const d=seed();d.bookings[0]={...booking,type:'other',price:1700,deposit:300};const app=boot(d);
