@@ -30,3 +30,11 @@ test('unfinished settings and blacklist drafts are included without applying the
 test('malformed booking context in a signed contract is rejected before restore',()=>{const app=boot({[key]:JSON.stringify(data)}),copy=app.api.capture('2.5.0');copy.backup.drafts.contract={...contract,bookingSnapshot:'not JSON'};assert.throws(()=>app.api.apply(copy),/booking|kontrakt/i);assert.equal(app.store.has(contractKey),false);});
 test('capture never turns an unfinished restore into a valid automatic snapshot',()=>{const app=boot({[key]:JSON.stringify(data),'hjortemosen_restore_journal_v1':'{}'});assert.throws(()=>app.api.capture('2.5.0'),/gendannelse/i);});
 test('a restore checks its preview baseline again when it actually commits',()=>{const app=boot({[key]:JSON.stringify(data)}),copy=app.api.capture('2.5.0'),expected=JSON.stringify(Object.values(app.api.keys).map(k=>app.store.get(k)??null));app.store.set(key,JSON.stringify({...data,renters:[{id:'r1',name:'Newer'}]}));assert.throws(()=>app.api.apply(copy,app.ctx.localStorage,expected),/ændret/i);assert.equal(JSON.parse(app.store.get(key)).renters[0].name,'Newer');});
+test('native Files mirror still receives the complete workspace when IndexedDB is unavailable',async()=>{
+ const app=boot({[key]:JSON.stringify(data),[contractKey]:JSON.stringify(contract)}),copies=[],states=[];
+ const manager=app.api.create({indexedDB:null,onStatus:s=>states.push(s),onSnapshot:copy=>copies.push(copy)});
+ assert.equal(await manager.flush(),false);assert.equal(states.at(-1).state,'error');assert.equal(copies.length,1);assert.equal(copies[0].backup.drafts.contract.values.name,'Åse');assert.deepEqual(JSON.parse(JSON.stringify(copies[0].backup.drafts.contract.strokes)),[[[10,20],[100,80]]]);
+});
+test('native fallback cannot turn corrupt source data into an empty file backup',async()=>{
+ const app=boot({[key]:'{broken'}),copies=[];const manager=app.api.create({indexedDB:null,onSnapshot:copy=>copies.push(copy)});assert.equal(await manager.flush(),false);assert.equal(copies.length,0);assert.equal(app.store.get(key),'{broken');
+});
