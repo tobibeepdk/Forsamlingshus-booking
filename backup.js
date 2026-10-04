@@ -70,6 +70,8 @@
   const storage=options.storage||root.localStorage,idb=Object.hasOwn(options,'indexedDB')?options.indexedDB:root.indexedDB,dbName=options.dbName||'hjortemosen_local_backups_v1';
   let opening=null,chain=Promise.resolve(),timer=null,archivePending=false;
   const status=value=>options.onStatus?.(value);
+  // Native Files has its own receipt/status; a file error must not misreport IndexedDB.
+  async function mirror(copy){try{await options.onSnapshot?.(copy);}catch{/* The native bridge reports its own error. */}}
   function db(){
    if(!opening)opening=new Promise((resolve,reject)=>{
     if(!idb){reject(new Error('Automatisk backup er ikke tilgængelig i denne browser. Gem en kopi i Filer.'));return;}
@@ -99,7 +101,7 @@
   function flush(archive=false){
    clearTimeout(timer);timer=null;archive=archive||archivePending;archivePending=false;
    let copy,missing;try{copy=capture(options.appVersion||'',storage);missing=storage.getItem(keys.data)===null;}catch(error){status({state:'error',message:'Backup kunne ikke laves: '+error.message});return Promise.resolve(false);}
-   status({state:'saving'});const task=chain.then(()=>write(copy,archive,missing)).then(saved=>{status({state:'saved',savedAt:saved.backup.savedAt});return true;}).catch(error=>{status({state:'error',message:error.message||'Backup kunne ikke gemmes. Frigør lagerplads og prøv igen.'});return false;});chain=task;return task;
+   status({state:'saving'});const task=chain.then(()=>write(copy,archive,missing)).then(async saved=>{status({state:'saved',savedAt:saved.backup.savedAt});await mirror(saved);return true;}).catch(async error=>{status({state:'error',message:error.message||'Backup kunne ikke gemmes. Frigør lagerplads og prøv igen.'});try{await mirror(capture(options.appVersion||'',storage));}catch{/* Never replace a good native copy with corrupt or unfinished data. */}return false;});chain=task;return task;
   }
   function queue(archive=false){archivePending=archivePending||archive;clearTimeout(timer);timer=setTimeout(()=>flush(),archive?0:600);}
   async function list(){const d=await db();return new Promise((resolve,reject)=>{const tx=d.transaction(['latest','history'],'readonly'),latest=tx.objectStore('latest').get('latest'),copies=tx.objectStore('history').getAll(),ids=tx.objectStore('history').getAllKeys();tx.oncomplete=()=>resolve([...(latest.result?[{id:'latest',savedAt:latest.result.backup.savedAt}]:[]),...copies.result.map((copy,i)=>({id:ids.result[i],savedAt:copy.backup.savedAt})).reverse()]);tx.onerror=()=>reject(tx.error);});}

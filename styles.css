@@ -211,3 +211,288 @@ input[readonly]{background:#f1f4ed;color:var(--green)}
 .signature-section{margin-top:24px;padding-top:22px;border-top:1px solid var(--line)}.signature-section h3{margin-bottom:8px}.signature-section canvas{display:block;width:100%;height:auto;aspect-ratio:3/1;background:#fff;border:2px solid #c6d4c3;border-radius:14px;touch-action:none;user-select:none;-webkit-user-select:none;margin:14px 0;cursor:crosshair}.signature-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.signature-toolbar .small-note{margin:0}.contract-editor #clearSignature:disabled{cursor:default}
 
 .auto-backup{padding:20px;background:var(--mint);border-radius:14px;margin:20px 0}.auto-backup>p:first-child{font-weight:600;margin:0 0 12px}.auto-backup .backup-actions{margin-top:16px}.auto-backup select{width:100%;max-width:560px}.auto-backup .warning{background:#fff3e0;padding:14px;border-radius:8px}.backup-actions{flex-wrap:wrap}
+
+/* A quieter working layout: five destinations and booking information first. */
+html{scroll-padding-top:100px;scroll-padding-bottom:190px}
+body{font-size:16px}
+h1{font-family:inherit;font-size:34px;line-height:1.2;font-weight:700;letter-spacing:-.75px;margin-top:0}
+h2{font-size:21px}
+button,.button{min-height:48px;touch-action:manipulation}
+label,legend{font-size:14px}
+input,select,textarea{min-height:50px;font-size:16px}
+textarea{line-height:1.65}
+input,select,textarea,summary{scroll-margin-top:100px;scroll-margin-bottom:190px}
+.page-heading{align-items:center;margin-bottom:24px}
+.page-heading p{font-size:15px;line-height:1.6;margin-top:8px}
+.page-heading .primary{font-size:15px;padding:13px 18px}
+.dashboard-heading .primary{display:inline-flex;flex-shrink:0}
+.desktop-nav button{font-size:15px;min-height:54px}
+.desktop-nav button:nth-child(6){margin-top:0}
+.sidebar-footer{margin-top:auto;padding-top:24px;line-height:1.5;font-size:11px;align-items:flex-start}
+.sidebar-footer .status-dot{margin-top:5px}
+.card{border-radius:16px;box-shadow:none}
+.card-head .text-button{font-size:14px;min-height:48px}
+.small-note{font-size:13px;line-height:1.65}
+.warning,.draft-banner,.draft-banner .text-button,.update-banner{font-size:14px;line-height:1.6}
+#stats{gap:14px;margin-bottom:18px}
+.stat{padding:20px;border-radius:14px}
+.stat>span{font-size:14px;color:var(--text)}
+.stat strong{font-size:30px;line-height:1.15;margin-top:8px}
+.stat small{font-size:12px;line-height:1.5;color:var(--muted)}
+.dashboard-context{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;margin-bottom:22px;align-items:stretch}
+.dashboard-context .next-card{padding:20px 22px;min-height:160px;justify-content:flex-start;gap:7px}
+.dashboard-context .next-card .eyebrow{font-size:11px;color:var(--muted);letter-spacing:.08em}
+.dashboard-context .next-card h3{font-family:inherit;font-size:23px;line-height:1.25;letter-spacing:-.3px;margin:1px 0}
+.dashboard-context .next-card p{font-size:14px;line-height:1.5;margin:0}
+.dashboard-context .next-bottom{padding-top:6px;gap:14px;justify-content:space-between}
+.dashboard-context .next-bottom button{font-size:14px;padding:10px 0}
+.dashboard-context .next-card>.secondary{font-size:14px;margin-top:7px}
+.dashboard-context .welcome-card{display:grid;grid-template-columns:132px minmax(0,1fr);min-height:160px;padding:0;background:#f1f4ed;border:1px solid var(--line)}
+.dashboard-context .welcome-photo{grid-column:1;grid-row:1;width:100%;height:100%;min-height:160px;object-fit:cover;object-position:50% 8%}
+.dashboard-context .welcome-copy{grid-column:2;grid-row:1;padding:20px;align-self:center}
+.dashboard-context .welcome-copy .eyebrow{font-size:10px;letter-spacing:.07em}
+.dashboard-context .welcome-copy h2{font-family:inherit;font-size:21px;line-height:1.3;letter-spacing:-.3px;margin:7px 0 5px}
+.dashboard-context .welcome-copy p{font-size:13px;line-height:1.55;margin:0;color:var(--muted)}
+.bookings-card{padding-bottom:0}
+.card-head p{font-size:13px;line-height:1.5}
+.list-toolbar{gap:12px}
+.search-field{min-width:0}
+.search-field input{font-size:15px;min-height:50px}
+.list-toolbar select{font-size:14px;min-height:50px;width:180px;flex-shrink:0}
+.booking-row{min-height:88px;gap:14px}
+.row-person>strong{font-size:16px}
+.row-person>small{font-size:13px}
+.row-end strong{font-size:15px}
+.payment-detail{font-size:12px;line-height:1.5}
+.badge{font-size:11px;line-height:1.5;white-space:normal;text-align:center}
+.quick-links{gap:16px}
+.quick-links button{min-height:82px;gap:12px;padding:18px;text-align:left}
+.quick-links strong{font-size:15px}
+.quick-links small{font-size:13px;line-height:1.5}
+.booking-form{max-width:none}
+.booking-form .card{padding:24px;margin-bottom:20px}
+.form-heading h2{font-size:21px}
+.two-col{gap:20px;align-items:start}
+.segmented{gap:10px}
+.segmented span{font-size:14px;min-height:56px;line-height:1.4}
+.check-row,.check-row strong{font-size:14px;min-height:48px}
+.check-row strong{min-height:0}
+.check-row small{font-size:13px;line-height:1.5}
+.check-row input{width:22px;height:22px;min-height:0}
+.payment-checks{gap:12px}
+.autosave-status{font-size:13px;line-height:1.5}
+.booking-form .booking-footer{padding:16px 20px}
+.form-actions{gap:12px}
+.form-actions button{font-size:15px}
+.form-actions .primary{order:0}
+.form-actions .secondary{order:1}
+.booking-footer .danger{order:2}
+.document-card .document-icon{margin-bottom:18px}
+.document-card p{font-size:14px;line-height:1.6}
+.document-card .doc-actions>*{font-size:14px;min-height:48px}
+.document-card .word-link{font-size:13px;min-height:48px;padding:12px 0;line-height:1.5}
+.document-card>.eyebrow{font-size:11px}
+.info-note{font-size:14px;line-height:1.6}
+.info-note p{line-height:1.6}
+.contract-editor label small{font-size:13px}
+.contract-ready p{font-size:14px;line-height:1.65}
+.contract-ready .doc-actions>*{font-size:14px;min-height:48px}
+.backup-card .card-head{margin-bottom:16px}
+.backup-card>.card-head p{max-width:70ch;margin-top:6px}
+.auto-backup{padding:20px;margin:0 0 20px;background:#f2f6ed;border:1px solid #dce6d4}
+.auto-backup>p:first-child,.native-backup [role=status]{font-size:15px;line-height:1.5;font-weight:600}
+.auto-backup .small-note{margin-top:0}
+.auto-backup select{max-width:none}
+.auto-backup .backup-actions{margin-top:14px}
+.backup-actions{gap:12px}
+.backup-actions>*{font-size:14px;min-height:48px}
+.browser-backup-files .small-note{margin-top:10px;max-width:78ch}
+.native-backup{padding:20px;border:1px solid #b8cfb0;background:#edf5e8;border-radius:14px;margin-bottom:18px}
+.native-backup h3{font-size:17px;margin-bottom:8px}
+.native-backup .small-note{margin-top:10px}
+.native-backup .backup-actions{margin-top:14px}
+.secondary-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-bottom:22px}
+.secondary-shortcuts .shortcut{display:flex;align-items:center;justify-content:flex-start;gap:16px;min-height:88px;padding:20px;text-align:left;margin:0}
+.secondary-shortcuts .shortcut>span:first-of-type{flex:1;min-width:0}
+.secondary-shortcuts .shortcut>span:last-child{margin-left:auto;color:var(--green)}
+.secondary-shortcuts strong{display:block;font-size:16px}
+.secondary-shortcuts small{display:block;color:var(--muted);font-size:13px;font-weight:400;line-height:1.5;margin-top:4px}
+.settings-details{padding:0}
+.settings-details summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:76px;padding:20px 24px;list-style:none}
+.settings-details summary::-webkit-details-marker{display:none}
+.settings-details summary::after{content:'⌄';font-size:23px;line-height:1;color:var(--green);flex-shrink:0}
+.settings-details[open]>summary::after{content:'⌃'}
+.settings-details summary strong{display:block;font-size:17px;font-weight:600}
+.settings-details summary small{display:block;font-size:13px;color:var(--muted);line-height:1.5;margin-top:4px;font-weight:400}
+.settings-details[open]>summary{border-bottom:1px solid var(--line)}
+.settings-details .details-content{padding:20px 24px 24px}
+.settings-details .details-content>p:first-child{margin-top:0;font-size:14px}
+.backup-transfer{border-top:1px solid var(--line);margin-top:22px;padding-top:4px}
+.backup-transfer summary{padding:16px 0;min-height:72px}
+.backup-transfer .details-content{padding:0 0 4px}
+.backup-transfer .backup-actions{margin-top:18px}
+.settings-prices label{font-size:14px}
+.install-card h2{font-size:18px}
+.install-card p{font-size:14px;line-height:1.6}
+.renter-card details,.contact-grid,.renter-head p{font-size:14px;line-height:1.6}
+.renter-actions button,.history-row{font-size:14px;min-height:48px}
+summary{min-height:48px}
+.blacklist-row p,.blacklist-row small,.blacklist-row button{font-size:14px}
+.dialog .actions,dialog .actions{flex-wrap:wrap}
+dialog p{font-size:14px;line-height:1.6}
+.app-footer{font-size:11px}
+
+@media(min-width:1200px){
+  .sidebar{display:flex;width:220px;padding:28px 18px 20px}
+  .app-shell{margin-left:220px}
+  .nav-caption{margin:36px 0 14px 12px}
+  .brand strong{font-size:20px}
+  .brand small{font-size:7px;letter-spacing:.07em}
+  .bottom-nav{display:none}
+  main{max-width:1180px;padding:30px 32px 0}
+  .app-header{padding:0 32px}
+  .toast{left:calc(50% + 110px)}
+}
+@media(max-width:1199px){
+  .sidebar{display:none}
+  .app-shell{margin-left:0}
+  .app-header{position:sticky;top:0;z-index:30;height:72px;padding:calc(env(safe-area-inset-top) + 12px) 28px 12px;background:var(--bg);min-height:72px}
+  .header-brand .brand-mark{display:inline-flex}
+  .header-brand{font-size:16px}
+  .header-meta{font-size:12px;gap:16px}
+  main{max-width:1100px;padding:28px 28px 0}
+  .bottom-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;bottom:0;left:0;right:0;z-index:40;gap:8px;padding:8px max(12px,env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-right));background:#fff;border-top:1px solid var(--line)}
+  .bottom-nav button{display:flex;flex-direction:column;gap:5px;padding:9px 4px;min-height:64px;font-size:13px;font-weight:500;background:transparent;color:var(--muted)}
+  .bottom-nav svg{width:23px;height:23px}
+  .bottom-nav button.active{background:var(--mint);color:var(--green);font-weight:650}
+  .bottom-nav .nav-booking svg{width:25px;height:25px;background:transparent;color:inherit;padding:0;margin:0}
+  .app-footer{padding-bottom:calc(115px + env(safe-area-inset-bottom))}
+  .booking-form{display:block}
+  .booking-form .booking-footer{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;position:sticky;bottom:calc(94px + env(safe-area-inset-bottom));z-index:25;box-shadow:0 4px 24px #234f4018}
+  .booking-footer .warning{width:100%;margin:0}
+  .booking-footer .autosave-status{margin:0;flex:1;min-width:200px}
+  .booking-footer .form-actions{margin:0;gap:10px}
+  .booking-footer .danger{margin-left:0}
+  .toast{left:50%;bottom:calc(105px + env(safe-area-inset-bottom));font-size:14px}
+}
+@media(min-width:768px) and (max-width:1199px){
+  .dashboard-context .welcome-card{grid-template-columns:150px minmax(0,1fr)}
+  .two-col{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .card{padding:24px}
+  .settings-details{padding:0}
+  .bookings-card{padding-bottom:0}
+  .day{min-height:98px}
+  .calendar-toolbar h2{font-size:28px}
+}
+@media(max-width:767px){
+  .app-header{height:auto;min-height:68px;padding:calc(12px + env(safe-area-inset-top)) 20px 12px;gap:10px}
+  .header-brand{font-size:15px}
+  .header-meta #currentDate{display:none}
+  .header-meta{font-size:11px}
+  main{padding:24px 20px 0}
+  h1{font-size:30px}
+  .page-heading{gap:14px;flex-wrap:wrap}
+  .page-heading p{font-size:14px}
+  .page-heading .primary{min-height:48px;font-size:14px;padding:12px 15px}
+  .dashboard-heading{flex-wrap:nowrap}
+  .dashboard-heading p{max-width:24ch}
+  .stats{grid-template-columns:1fr 1fr;gap:12px}
+  .stat{padding:17px}
+  .stat>span{font-size:13px}
+  .stat strong{font-size:28px}
+  .stat small{font-size:12px}
+  .stat.amount{grid-column:1/-1;display:grid;grid-template-columns:1fr auto;column-gap:12px;align-items:center}
+  .stat.amount strong{grid-column:2;grid-row:1/3;margin:0;font-size:27px}
+  .stat.amount small{grid-column:1}
+  .dashboard-context{grid-template-columns:1fr;gap:12px;margin-bottom:20px}
+  .dashboard-context .next-card.is-empty{display:flex}
+  .dashboard-context .next-card{min-height:0;padding:18px 20px}
+  .dashboard-context .welcome-card{grid-template-columns:110px minmax(0,1fr);min-height:110px}
+  .dashboard-context .welcome-photo{min-height:110px}
+  .dashboard-context .welcome-copy{padding:15px 18px}
+  .dashboard-context .welcome-copy h2{font-size:19px;margin:5px 0}
+  .dashboard-context .welcome-copy p{font-size:13px}
+  .dashboard-context .next-card h3{font-size:21px}
+  .card{padding:20px;margin-bottom:20px}
+  .card-head{align-items:flex-start;gap:12px}
+  .card-head h2{font-size:20px}
+  .card-head .text-button{font-size:13px;padding:0;min-height:48px;text-align:right}
+  .bookings-card{padding-bottom:0}
+  .list-toolbar{flex-wrap:wrap;gap:10px}
+  .list-toolbar .search-field{flex:1 1 220px}
+  .search-field{padding:0 12px}
+  .search-field input{font-size:14px;min-height:48px}
+  .list-toolbar select{width:100%;font-size:14px;min-height:48px}
+  .booking-row{padding:17px 0;gap:12px;min-height:92px}
+  .row-person>strong{font-size:15px}
+  .row-person>small{font-size:12px}
+  .row-end strong{font-size:14px}
+  .payment-detail{font-size:12px}
+  .badge{font-size:11px}
+  .date-tile{min-width:45px;min-height:54px}
+  .date-tile strong{font-size:23px}
+  .date-tile small{font-size:10px}
+  .quick-links{grid-template-columns:1fr;gap:12px}
+  .quick-links button{min-height:74px;padding:16px}
+  .quick-links strong{font-size:15px}
+  .quick-links small{font-size:13px}
+  .booking-form .card{padding:20px}
+  .two-col{grid-template-columns:1fr;gap:0}
+  .segmented{grid-template-columns:1fr}
+  .segmented span{justify-content:flex-start;font-size:14px;min-height:52px;padding:12px 14px}
+  .segmented input:checked+span::after{content:'✓';margin-left:auto}
+  .payment-checks{grid-template-columns:1fr}
+  .form-heading h2{font-size:20px}
+  .booking-form .booking-footer{padding:15px;gap:12px;bottom:calc(89px + env(safe-area-inset-bottom))}
+  .booking-footer .autosave-status{min-width:0;flex-basis:100%;font-size:13px}
+  .booking-footer .form-actions{display:flex;width:100%;gap:10px}
+  .booking-footer .form-actions button{flex:1 1 130px;font-size:14px;padding:12px 10px}
+  .booking-footer .form-actions .danger{flex-basis:100%}
+  .document-card{padding:22px}
+  .document-card .doc-actions>*{font-size:14px;padding:12px 15px}
+  .document-card .word-link{font-size:13px}
+  .document-card h2{font-size:27px}
+  .backup-actions{display:flex;gap:10px}
+  .backup-actions>*{flex:1 1 200px;font-size:14px;min-height:48px}
+  .backup-actions .text-button{justify-content:flex-start}
+  .auto-backup,.native-backup{padding:16px}
+  .small-note{font-size:13px}
+  .secondary-shortcuts{grid-template-columns:1fr;gap:12px;margin-bottom:20px}
+  .secondary-shortcuts .shortcut{min-height:82px;padding:18px}
+  .settings-details{padding:0}
+  .settings-details summary{padding:18px 20px}
+  .settings-details .details-content{padding:18px 20px 20px}
+  .backup-transfer summary{padding:16px 0}
+  .backup-transfer .details-content{padding:0 0 4px}
+  .settings-prices{grid-template-columns:1fr;gap:0}
+  .settings-prices label{font-size:14px}
+  .calendar-toolbar h2{font-size:25px}
+  .day{min-height:58px}
+  .day .date{font-size:16px}
+  .legend{font-size:11px;flex-wrap:wrap;gap:12px}
+  .weekdays{font-size:12px}
+  .renter-search input{font-size:14px}
+  .empty-state h3{font-size:22px}
+  .empty-state p{font-size:14px;line-height:1.6}
+  .draft-banner{flex-wrap:wrap;padding:12px 15px}
+  .draft-banner .text-button{font-size:14px}
+  .bottom-nav{padding-left:max(8px,env(safe-area-inset-left));padding-right:max(8px,env(safe-area-inset-right));gap:3px}
+  .bottom-nav button{font-size:12px;padding:9px 2px;min-height:60px}
+  .bottom-nav svg{width:22px;height:22px}
+  .app-footer{font-size:10px}
+}
+@media(max-width:380px){
+  .dashboard-heading{flex-wrap:wrap}
+  .dashboard-heading .primary{width:100%}
+  .header-brand strong span{display:none}
+  main{padding-left:16px;padding-right:16px}
+  .stat{padding:14px}
+  .stat.amount strong{font-size:24px}
+  .row-end{flex-basis:calc(100% - 57px);margin-left:57px;align-items:flex-start}
+}
+@media print{
+  .booking-form .booking-footer{position:static;box-shadow:none}
+  .sidebar,.app-header,.bottom-nav,.app-footer{display:none!important}
+  .app-shell{margin:0}
+  main{padding:0}
+}

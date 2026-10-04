@@ -1,10 +1,10 @@
-const VERSION='2.5.0';
+const VERSION='2.6.0';
 const SCOPE=self.registration.scope;
 const PREFIX='hjortemosen-'+SCOPE+'-';
 const CACHE=PREFIX+VERSION;
 const clientVersions=new Map();
 const legacy=name=>/^hjortemosen-pwa-v1\./.test(name);
-const ASSETS=['./','./index.html','./styles.css?v=2.5.0','./data.js?v=2.5.0','./app.js?v=2.5.0','./backup.js?v=2.5.0','./contract-libs.js?v=2.5.0','./contracts.js?v=2.5.0','./signature-pad.js?v=2.5.0','./contract-ui.js?v=2.5.0','./manifest.webmanifest','./faelleshus.jpg?v=2.5.0','./favicon.svg?v=2.5.0','./icon-192.png?v=2.5.0','./icon-512.png?v=2.5.0','./apple-touch-icon.png?v=2.5.0','./kontrakt-1000.pdf?v=2.5.0','./kontrakt-1000.docx?v=2.5.0','./kontrakt-1500.pdf?v=2.5.0'];
+const ASSETS=['./','./index.html','./styles.css?v=2.6.0','./data.js?v=2.6.0','./app.js?v=2.6.0','./backup.js?v=2.6.0','./native-bridge.js?v=2.6.0','./contract-libs.js?v=2.6.0','./contracts.js?v=2.6.0','./signature-pad.js?v=2.6.0','./contract-ui.js?v=2.6.0','./manifest.webmanifest','./faelleshus.jpg?v=2.6.0','./favicon.svg?v=2.6.0','./icon-192.png?v=2.6.0','./icon-512.png?v=2.6.0','./apple-touch-icon.png?v=2.6.0','./kontrakt-1000.pdf?v=2.6.0','./kontrakt-1000.docx?v=2.6.0','./kontrakt-1500.pdf?v=2.6.0'];
 self.addEventListener('install',event=>event.waitUntil((async()=>{
  const cache=await caches.open(CACHE);await cache.addAll(ASSETS);
  // v1 has no update button. Activate its first upgrade without reloading a form.

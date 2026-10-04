@@ -7,7 +7,7 @@
  const draftKey=HjortBackup.keys.contract;
  function autoStatus(text){$('#contractAutoSaveStatus').textContent=text;}
  function saveContract(){
-  if(restoring||draftBlocked)return false;
+  if(!nativeReady||restoring||draftBlocked)return false;
   try{
    HjortBackup.ensureWritable();if(localStorage.getItem(draftKey)!==baseRaw){autoStatus('Kontraktkladden er ændret i et andet vindue. Genindlæs for at fortsætte med den gemte version.');return false;}
    const d={template:template.value,bookingId:booking.value,bookingSnapshot,values:Object.fromEntries(fields.map(key=>[key,input(key).value])),strokes:signaturePad.getStrokes(),savedAt:new Date().toISOString()};
@@ -66,10 +66,12 @@
   }catch(err){if(current===revision){error.textContent=err.message||'Kontrakten kunne ikke udfyldes. Prøv igen.';error.classList.remove('hidden');status.textContent='Oplysningerne er bevaret. Ret eventuelle fejl, og prøv igen.';}}
   finally{busy=false;form.setAttribute('aria-busy','false');warning();}
  };
- $('#saveFilledContract').onclick=()=>{if(ready){download(ready.file,ready.file.name);toast('Kontrakten er gemt som fil');}};
+ $('#openFilledContract').onclick=async event=>{if(nativeApp&&ready){event.preventDefault();try{await nativeApp.previewFile(ready.file);}catch(err){error.textContent=err.message;error.classList.remove('hidden');}}};
+ $('#saveFilledContract').onclick=async()=>{if(!ready)return;if(nativeApp){try{const reply=await nativeApp.shareFile(ready.file);status.textContent=reply.cancelled?'Gemning blev afbrudt. Kontrakten er stadig klar.':'Vælg Gem i Filer i delingsmenuen. Kontrollér, at kontrakten blev gemt.';}catch(err){error.textContent=err.message;error.classList.remove('hidden');}}else{download(ready.file,ready.file.name);toast('Kontrakten er gemt som fil');}};
  $('#shareFilledContract').onclick=async()=>{
   if(!ready)return;const file=ready.file;
   try{
+   if(nativeApp){const reply=await nativeApp.shareFile(file);status.textContent=reply.cancelled?'Deling blev afbrudt. Kontrakten er stadig klar.':'Delingsmenuen er afsluttet. Du kan gemme eller dele kontrakten igen.';return;}
    if(!navigator.share||!navigator.canShare?.({files:[file]})){download(file,file.name);status.textContent='Filen er hentet. Åbn Mail eller Beskeder, vælg modtageren, og vedhæft filen fra Filer.';return;}
    // The file is already generated: native sharing starts on this user gesture.
    await navigator.share({title:'Udfyldt lejekontrakt · Hjortemosen',files:[file]});
@@ -88,7 +90,7 @@
   refresh();restoring=false;
   if(baseRaw&&!draftBlocked)saveContract();
  }
- $('#clearContract').onclick=()=>{
+ $('#clearContract').onclick=()=>{if(!nativeReady)return;
   try{HjortBackup.ensureWritable();if(!draftBlocked&&localStorage.getItem(draftKey)!==baseRaw){autoStatus('Kontraktkladden er ændret i et andet vindue. Genindlæs først.');return;}if(draftBlocked&&!confirm('Kassér den kontraktkladde, der ikke kunne læses?'))return;localStorage.removeItem(draftKey);baseRaw=null;restoreDraft();window.HjortAutoBackup?.queue();}catch{autoStatus('Kontraktkladden kunne ikke ryddes.');}
  };
  window.addEventListener('pagehide',saveContract);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveContract();});
