@@ -225,6 +225,10 @@ input,select,textarea,summary{scroll-margin-top:100px;scroll-margin-bottom:190px
 .page-heading{align-items:center;margin-bottom:24px}
 .page-heading p{font-size:15px;line-height:1.6;margin-top:8px}
 .page-heading .primary{font-size:15px;padding:13px 18px}
+.page-heading-group .back-button{min-height:48px;padding:12px 16px;font-size:15px;margin-bottom:14px;white-space:nowrap}
+.page-heading-group .page-heading{flex-wrap:wrap}
+.page-heading-group .page-heading>div:first-child{flex:1 1 300px;min-width:0}
+.page-heading-group .page-heading>button,.page-heading-group .calendar-actions{flex-shrink:0}
 .dashboard-heading .primary{display:inline-flex;flex-shrink:0}
 .desktop-nav button{font-size:15px;min-height:54px}
 .desktop-nav button:nth-child(6){margin-top:0}

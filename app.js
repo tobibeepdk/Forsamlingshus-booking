@@ -1,5 +1,5 @@
 'use strict';
-const APP_VERSION='2.6.0';
+const APP_VERSION='2.6.1';
 const nativeApp=window.HjortNative?.available?window.HjortNative:null;
 let nativeReady=!nativeApp;
 if(nativeApp)document.body.inert=true;
@@ -52,7 +52,9 @@ function money(n){return new Intl.NumberFormat('da-DK').format(Number(n||0))+' k
 function timeNow(){return new Intl.DateTimeFormat('da-DK',{hour:'2-digit',minute:'2-digit'}).format(new Date());}
 function esc(v=''){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
 function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3500);}
-function go(id){const navId=['renters','blacklist'].includes(id)?'settings':id;$$('.view').forEach(v=>v.classList.toggle('active',v.id===id));$$('[data-view]').forEach(b=>{b.classList.toggle('active',b.dataset.view===navId);b.setAttribute('aria-current',b.dataset.view===navId?'page':'false');});if(id==='calendar'){renderCalendar();bindBookingButtons();}if(id==='documents')window.HjortContractUI?.refresh();window.scrollTo({top:0,behavior:'instant'});}
+const viewHistory=[];let currentView='dashboard';
+function go(id,remember=true){if(id!==currentView){if(remember)viewHistory.push(currentView);currentView=id;}const navId=['renters','blacklist'].includes(id)?'settings':id;$$('.view').forEach(v=>v.classList.toggle('active',v.id===id));$$('[data-view]').forEach(b=>{b.classList.toggle('active',b.dataset.view===navId);b.setAttribute('aria-current',b.dataset.view===navId?'page':'false');});if(id==='calendar'){renderCalendar();bindBookingButtons();}if(id==='documents')window.HjortContractUI?.refresh();window.scrollTo({top:0,behavior:'instant'});}
+$$('[data-back]').forEach(button=>button.onclick=()=>{saveOpenForms();go(viewHistory.pop()||'dashboard',false);});
 $$('[data-view]').forEach(b=>b.onclick=()=>go(b.dataset.view));
 $$('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
 function typeLabel(t){return t==='member'?'Haveforeningsmedlem':t==='friend'?'Ven':t==='board'?'Bestyrelsesmedlem':'Tidligere lejertype';}
