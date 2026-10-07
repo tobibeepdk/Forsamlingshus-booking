@@ -5,8 +5,19 @@
  const fields=Object.keys(HjortContracts.labels),input=key=>$('#contract-'+key);
  let ready=null,revision=0,busy=false,emailBusy=false,bookingSnapshot='',restoring=false,draftBlocked=false,baseRaw=null,lastInkSave=0;
  const draftKey=HjortBackup.keys.contract;
+ const smsLinks=[$('#openContractSms'),$('#openFilledContractSms')],smsError=$('#contractSmsError');
+ function updateSmsLinks(){
+  const number=input('phone').value.replace(/[\s().-]/g,''),valid=/^\+?\d{3,15}$/.test(number);
+  for(const link of smsLinks)link.href=valid?'sms:'+number:'#';return valid?number:'';
+ }
+ for(const link of smsLinks)link.onclick=event=>{
+  if(!updateSmsLinks()){event.preventDefault();error.textContent=smsError.textContent='Udfyld ét gyldigt telefonnummer med 3-15 cifre. Et + må kun stå foran nummeret.';error.classList.remove('hidden');smsError.classList.remove('hidden');input('phone').focus();return;}
+  error.classList.add('hidden');smsError.classList.add('hidden');status.textContent='Skriv din besked i Beskeder, og tryk selv på Send. SMS-genvejen vedhæfter ikke kontrakten. Appen kan ikke kontrollere afsendelsen.';
+ };
+ input('phone').addEventListener('change',()=>{updateSmsLinks();smsError.classList.add('hidden');});
  function autoStatus(text){$('#contractAutoSaveStatus').textContent=text;}
  function saveContract(){
+  updateSmsLinks();
   if(!nativeReady||restoring||draftBlocked)return false;
   try{
    HjortBackup.ensureWritable();if(localStorage.getItem(draftKey)!==baseRaw){autoStatus('Kontraktkladden er ændret i et andet vindue. Genindlæs for at fortsætte med den gemte version.');return false;}
@@ -18,7 +29,7 @@
   }catch{autoStatus('Kontraktkladden kunne ikke gemmes. Lad formularen være åben og frigør lagerplads.');return false;}
  }
  function snapshot(b){return b?JSON.stringify(Object.fromEntries(['name','phone','address','email','date','price','deposit','type'].map(key=>[key,b[key]]))):'';}
- function invalidate(){revision++;if(ready)URL.revokeObjectURL(ready.url);ready=null;$('#contractReady').classList.add('hidden');$('#contractEmailFallback').classList.add('hidden');$('#contractEmailDraft').href='#';error.classList.add('hidden');status.textContent='Ret oplysningerne, og tryk på Lav udfyldt kontrakt.';}
+ function invalidate(){revision++;if(ready)URL.revokeObjectURL(ready.url);ready=null;$('#contractReady').classList.add('hidden');$('#contractEmailFallback').classList.add('hidden');$('#contractEmailDraft').href='#';error.classList.add('hidden');smsError.classList.add('hidden');status.textContent='Ret oplysningerne, og tryk på Lav udfyldt kontrakt.';}
  const signaturePad=HjortSignature.create($('#signatureCanvas'),(hasInk,detail)=>{invalidate();$('#signatureStatus').textContent=hasInk?'Underskrift tilføjet.':'Ingen håndskrevet underskrift.';$('#clearSignature').disabled=!hasInk;if(!restoring&&(!detail?.drawing||Date.now()-lastInkSave>100)){lastInkSave=Date.now();saveContract();}});
  $('#signatureStatus').textContent='Ingen håndskrevet underskrift.';$('#clearSignature').disabled=true;
  $('#clearSignature').onclick=()=>{signaturePad.clear();};
@@ -44,7 +55,7 @@
    if(b&&previous){const before=HjortContracts.fromBooking(previous,''),after=HjortContracts.fromBooking(b,'');for(const key of ['name','phone','address','email','rentalDate'])if(input(key).value===before[key])input(key).value=after[key];}
    bookingSnapshot=next;saveContract();status.textContent=b?'Bookingoplysningerne er ændret. Dine egne kontraktfelter er bevaret. Kontrollér oplysningerne, og lav kontrakten igen.':'Bookingen findes ikke længere. Kontrollér felterne, før du laver en kontrakt uden booking.';
   }
-  warning();
+  updateSmsLinks();warning();
  }
  form.addEventListener('input',()=>{invalidate();signaturePad.clear();warning();saveContract();});
  template.onchange=()=>{invalidate();signaturePad.clear();warning();saveContract();};booking.onchange=prefill;
