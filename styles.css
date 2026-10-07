@@ -301,6 +301,12 @@ input,select,textarea,summary{scroll-margin-top:100px;scroll-margin-bottom:190px
 .contract-editor label small{font-size:13px}
 .contract-ready p{font-size:14px;line-height:1.65}
 .contract-ready .doc-actions>*{font-size:14px;min-height:48px}
+.contract-ready .contract-email-help{margin:16px 0 10px}
+.contract-sent-link{display:inline-flex;align-items:center;min-height:48px;padding:10px 4px;color:var(--green);line-height:1.5;text-underline-offset:4px;overflow-wrap:anywhere}
+.contract-email-fallback{margin-top:18px;padding:18px;border:1px solid #d5dfcd;border-radius:12px;background:#fff}
+.contract-email-fallback>strong{display:block;font-size:15px;line-height:1.5}
+.contract-email-fallback p{margin:10px 0 14px}
+.contract-email-fallback .button{min-height:48px;font-size:14px;white-space:normal;text-align:center;line-height:1.5}
 .backup-card .card-head{margin-bottom:16px}
 .backup-card>.card-head p{max-width:70ch;margin-top:6px}
 .auto-backup{padding:20px;margin:0 0 20px;background:#f2f6ed;border:1px solid #dce6d4}

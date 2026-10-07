@@ -1,4 +1,4 @@
-# Hjortemosen Booking – version 2.6.1
+# Hjortemosen Booking – webversion 2.6.2
 
 Booking af H/F Hjortemosens fælleshus på iPad. Appen findes som webapp/PWA og som et native iPad-projekt med de samme bookingfunktioner. Begge arbejder med lokale oplysninger og kan bruges offline, når appens filer er hentet.
 
@@ -10,7 +10,7 @@ Kalenderens **Udskriv / PDF** udskriver den viste måned. En booking oprettes i 
 
 ## Webapp og GitHub Pages
 
-Webappen kræver ikke Xcode. Dens HTML-, CSS-, JavaScript-, manifest-, ikon-, foto- og kontraktfiler ligger i repository-roden. GitHub Pages serverer disse filer. Det separate iPad-projekt findes som [Hjortemosen-iPad-v2.6.1.zip](Hjortemosen-iPad-v2.6.1.zip); efter udpakning ligger det under `native/`.
+Webappen kræver ikke Xcode. Dens HTML-, CSS-, JavaScript-, manifest-, ikon-, foto- og kontraktfiler ligger i repository-roden. GitHub Pages serverer disse filer. Den tidligere native kildeversion 2.6.1 findes som [Hjortemosen-iPad-v2.6.1.zip](Hjortemosen-iPad-v2.6.1.zip); efter udpakning ligger det under `native/`.
 
 Efter en udgivelse skal GitHub Pages være færdig med at deploye. Når appen viser **En ny version er klar**, bruges **Opdatér app**. Kladden gemmes før opdatering. Opdateringer sletter ikke bookingdata eller backuphistorik.
 
@@ -52,7 +52,11 @@ Gem eller del en **fuld JSON-sikkerhedskopi** fra den app, der indeholder oplysn
 
 Under **Dokumenter** kan de to PDF-kontrakter og Word-kontrakten udfyldes på iPad. Vælg en booking eller skriv oplysningerne, underskriv om ønsket, og vælg **Lav udfyldt kontrakt**. Se filen igennem før deling. PDF-felterne kan også redigeres senere i en PDF-app.
 
-**Del udfyldt kontrakt** åbner iPadens delingsmenu med den færdige fil. Vælg **Mail** eller **Beskeder** og modtageren. E-mailadresse og telefonnummer kan kopieres fra formularen. Du sender selv fra Mail eller Beskeder. Hvis fildeling ikke understøttes, gemmes filen til manuel vedhæftning. Åbn den udfyldte PDF og brug udskriftsmenuen for at udskrive.
+**Send via Outlook/Mail** kræver en gyldig modtageradresse og åbner delingsmenuen med den færdige PDF- eller Word-fil, inklusive en eventuel underskrift. Kopiér modtageradressen, vælg **Outlook** eller **Mail**, indsæt modtageren, og vælg din Hotmailkonto under **Fra**. Kontoen skal være tilføjet i mailappen. Kontrollér vedhæftningen, og tryk selv på **Send**. Kontrollér derefter **Sendt post** i den samme Hotmailkonto; en besked i **Udbakke** er endnu ikke sendt. Appen kan ikke kontrollere afsendelsen. **Åbn Sendt post i Hotmail** åbner Hotmails webmail.
+
+Hvis fildeling ikke understøttes, hentes den udfyldte fil, og en genvej åbner en e-mailkladde med modtager og emne. Kladden indeholder ingen vedhæftning; vedhæft filen fra **Filer** eller **Downloads** før afsendelse. Hvis deling fejler, brug **Gem fil** og vedhæft manuelt. **Del via Beskeder m.m.** bevarer den almindelige fildeling. Åbn den udfyldte PDF og brug udskriftsmenuen for at udskrive.
+
+E-mailflowet i denne webversion er ikke indbygget i den tidligere native kildepakke 2.6.1. Den pakke har fortsat den almindelige delingsmenu; et nyt signeret native build kræver en separat udgivelse.
 
 De originale kontraktvilkår bevares: leje 1.000/1.500 kr. og depositum 500 kr. Bookinger med andre beløb, herunder gratis bestyrelsesbookinger, blokeres ved valg af booking i disse prisbestemte kontrakter. Udfyldningen ændrer ikke bookingdata. Tekst, der ikke kan stå på én linje i et PDF-felt, vises på en ekstra side med henvisning fra første side. PDF understøtter danske/latinske tegn; ved andre tegn gives en fejl med mulighed for at vælge Word. Biblioteker er versionslåste og gemt lokalt; se `THIRD-PARTY-LICENSES.txt`.
 

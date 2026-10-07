@@ -9,9 +9,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Hjortemosen">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="icon" href="./favicon.svg?v=2.6.1" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=2.6.1">
-  <link rel="stylesheet" href="./styles.css?v=2.6.1">
+  <link rel="icon" href="./favicon.svg?v=2.6.2" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=2.6.2">
+  <link rel="stylesheet" href="./styles.css?v=2.6.2">
   <title>Hjortemosen Booking</title>
 </head>
 <body>
@@ -29,7 +29,7 @@
 </defs></svg>
 <a class="skip-link" href="#main">Gå til indhold</a>
 <aside class="sidebar">
-  <a class="brand" href="./" aria-label="Hjortemosen Booking, forsiden"><span class="brand-mark"><img src="./icon-192.png?v=2.6.1" alt="" width="192" height="192"></span><span><strong>Hjortemosen</strong><small>BOOKING AF FÆLLESHUS</small></span></a>
+  <a class="brand" href="./" aria-label="Hjortemosen Booking, forsiden"><span class="brand-mark"><img src="./icon-192.png?v=2.6.2" alt="" width="192" height="192"></span><span><strong>Hjortemosen</strong><small>BOOKING AF FÆLLESHUS</small></span></a>
   <span class="nav-caption">BOOKING OG BETALING</span>
   <nav class="desktop-nav" aria-label="Hovedmenu">
     <button data-view="dashboard" class="active" aria-current="page"><svg><use href="#i-grid"/></svg>Overblik</button>
@@ -41,7 +41,7 @@
   <div class="sidebar-footer"><span class="status-dot"></span>Gemmes automatisk på din enhed</div>
 </aside>
 <div class="app-shell">
-<header class="app-header"><div class="header-brand"><span class="brand-mark small"><img src="./icon-192.png?v=2.6.1" alt="" width="192" height="192"></span><strong>Hjortemosen <span>Booking</span></strong></div><div class="header-meta"><span id="currentDate"></span><span class="connection"><i class="status-dot"></i><span id="connectionStatus" role="status">Forbereder offlinebrug</span></span></div><button id="installBtn" class="secondary hidden">Installer</button></header>
+<header class="app-header"><div class="header-brand"><span class="brand-mark small"><img src="./icon-192.png?v=2.6.2" alt="" width="192" height="192"></span><strong>Hjortemosen <span>Booking</span></strong></div><div class="header-meta"><span id="currentDate"></span><span class="connection"><i class="status-dot"></i><span id="connectionStatus" role="status">Forbereder offlinebrug</span></span></div><button id="installBtn" class="secondary hidden">Installer</button></header>
 <main id="main">
   <div id="storageError" class="warning hidden" role="alert"></div>
   <div id="updateBanner" class="update-banner hidden"><span>En ny version er klar. Din kladde gemmes før opdatering.</span><button class="primary" id="updateApp">Opdatér app</button></div>
@@ -49,7 +49,7 @@
     <div class="page-heading dashboard-heading"><div><h1 id="dashboardTitle">Overblik</h1><p>Kommende bookinger og betalinger.</p></div><button class="primary" data-new><svg><use href="#i-plus"/></svg>Ny booking</button></div>
     <div id="draftBanner" class="draft-banner hidden"><span>Du har en gemt bookingkladde.</span><button class="text-button" data-go="booking">Fortsæt kladden →</button></div>
     <div class="stats" id="stats" aria-label="Bookinger og manglende betaling"></div>
-    <div class="hero-grid dashboard-context"><div class="next-card" id="nextBooking"></div><div class="welcome-card"><img class="welcome-photo" src="./faelleshus.jpg?v=2.6.1" alt="Hjortemosens fælleshus med rødt tag og blå gavl, omgivet af grønne haver." width="1280" height="1059" fetchpriority="high"><div class="welcome-copy"><span class="eyebrow">H/F HJORTEMOSEN</span><h2>Fælleshuset</h2><p>Kalender, lejere og kontrakter samlet på din iPad.</p></div></div></div>
+    <div class="hero-grid dashboard-context"><div class="next-card" id="nextBooking"></div><div class="welcome-card"><img class="welcome-photo" src="./faelleshus.jpg?v=2.6.2" alt="Hjortemosens fælleshus med rødt tag og blå gavl, omgivet af grønne haver." width="1280" height="1059" fetchpriority="high"><div class="welcome-copy"><span class="eyebrow">H/F HJORTEMOSEN</span><h2>Fælleshuset</h2><p>Kalender, lejere og kontrakter samlet på din iPad.</p></div></div></div>
     <div class="card bookings-card"><div class="card-head"><div><h2>Bookingoversigt</h2><p id="bookingListCount" class="muted"></p></div><button class="text-button" id="shareOverview">Del oversigt <span aria-hidden="true">↗</span></button></div><div class="list-toolbar"><label class="search-field"><svg><use href="#i-search"/></svg><input id="bookingSearch" type="search" placeholder="Søg navn, have nummer eller dato" aria-label="Søg bookinger"></label><select id="bookingFilter" aria-label="Vis bookinger"><option value="upcoming">Kommende</option><option value="unpaid">Mangler betaling</option><option value="all">Alle bookinger</option></select></div><div id="upcomingList" class="list"></div></div>
     <div class="quick-links"><button data-go="renters"><svg><use href="#i-users"/></svg><span><strong>Gemte lejere</strong><small id="renterCount">0 gemte lejere</small></span><span aria-hidden="true">↗</span></button><button data-go="documents"><svg><use href="#i-file"/></svg><span><strong>Lejekontrakter</strong><small>Åbn, del eller print</small></span><span aria-hidden="true">↗</span></button></div>
   </section>
@@ -70,8 +70,8 @@
   <section id="renters" class="view" aria-labelledby="rentersTitle"><div class="page-heading-group"><button type="button" class="secondary back-button" data-back>← Tilbage</button><div class="page-heading"><div><h1 id="rentersTitle">Gemte lejere</h1><p>Oplysninger og tidligere bookinger. Klar til næste gang.</p></div></div></div><label class="search-field renter-search"><svg><use href="#i-search"/></svg><input id="renterSearch" type="search" placeholder="Søg navn, have nummer eller telefon" aria-label="Søg lejere"></label><div id="renterList" class="renter-grid"></div></section>
   <section id="blacklist" class="view" aria-labelledby="blacklistTitle"><div class="page-heading-group"><button type="button" class="secondary back-button" data-back>← Tilbage</button><div class="page-heading"><div><h1 id="blacklistTitle">Blacklist</h1><p>Booking blokeres ved match på navn eller have nummer.</p></div><button id="addBlacklist" class="primary">+ Tilføj person</button></div></div><div class="card"><div class="card-head"><h2>Blokerede lejere</h2><span class="muted" id="blacklistCount"></span></div><div id="blacklistList"></div></div></section>
   <section id="documents" class="view" aria-labelledby="documentsTitle"><div class="page-heading-group"><button type="button" class="secondary back-button" data-back>← Tilbage</button><div class="page-heading"><div><h1 id="documentsTitle">Dokumenter</h1><p>Vælg en kontrakt, udfyld den og underskriv på iPad.</p></div></div></div><div class="document-grid">
-    <article class="card document-card"><span class="document-icon"><svg><use href="#i-file"/></svg>PDF</span><span class="eyebrow">HAVEFORENINGENS MEDLEMMER</span><h2>Lejekontrakt</h2><strong class="document-price">1.000 <small>kr.</small></strong><p class="muted">Kontrakten til udlejning af fælleshuset.</p><button type="button" class="primary fill-contract" data-fill-contract="member-pdf">Udfyld kontrakt</button><div class="doc-actions"><a class="primary button" href="./kontrakt-1000.pdf?v=2.6.1" target="_blank" rel="noopener">Åbn PDF ↗</a><a class="secondary button" href="./kontrakt-1000.pdf?v=2.6.1" download="Lejekontrakt-Hjortemosen-1000.pdf">Download</a><button class="secondary" data-share-doc="./kontrakt-1000.pdf?v=2.6.1">Del</button><button class="text-button" data-print="./kontrakt-1000.pdf?v=2.6.1">Print</button></div><a class="word-link" href="./kontrakt-1000.docx?v=2.6.1" download="Lejekontrakt-Hjortemosen-1000.docx">Download redigerbar Word-version ↗</a></article>
-    <article class="card document-card"><span class="document-icon"><svg><use href="#i-file"/></svg>PDF</span><span class="eyebrow">VENNER</span><h2>Lejekontrakt</h2><strong class="document-price">1.500 <small>kr.</small></strong><p class="muted">Kontrakten til udlejning af fælleshuset.</p><button type="button" class="primary fill-contract" data-fill-contract="friend-pdf">Udfyld kontrakt</button><div class="doc-actions"><a class="primary button" href="./kontrakt-1500.pdf?v=2.6.1" target="_blank" rel="noopener">Åbn PDF ↗</a><a class="secondary button" href="./kontrakt-1500.pdf?v=2.6.1" download="Lejekontrakt-Hjortemosen-1500.pdf">Download</a><button class="secondary" data-share-doc="./kontrakt-1500.pdf?v=2.6.1">Del</button><button class="text-button" data-print="./kontrakt-1500.pdf?v=2.6.1">Print</button></div></article>
+    <article class="card document-card"><span class="document-icon"><svg><use href="#i-file"/></svg>PDF</span><span class="eyebrow">HAVEFORENINGENS MEDLEMMER</span><h2>Lejekontrakt</h2><strong class="document-price">1.000 <small>kr.</small></strong><p class="muted">Kontrakten til udlejning af fælleshuset.</p><button type="button" class="primary fill-contract" data-fill-contract="member-pdf">Udfyld kontrakt</button><div class="doc-actions"><a class="primary button" href="./kontrakt-1000.pdf?v=2.6.2" target="_blank" rel="noopener">Åbn PDF ↗</a><a class="secondary button" href="./kontrakt-1000.pdf?v=2.6.2" download="Lejekontrakt-Hjortemosen-1000.pdf">Download</a><button class="secondary" data-share-doc="./kontrakt-1000.pdf?v=2.6.2">Del</button><button class="text-button" data-print="./kontrakt-1000.pdf?v=2.6.2">Print</button></div><a class="word-link" href="./kontrakt-1000.docx?v=2.6.2" download="Lejekontrakt-Hjortemosen-1000.docx">Download redigerbar Word-version ↗</a></article>
+    <article class="card document-card"><span class="document-icon"><svg><use href="#i-file"/></svg>PDF</span><span class="eyebrow">VENNER</span><h2>Lejekontrakt</h2><strong class="document-price">1.500 <small>kr.</small></strong><p class="muted">Kontrakten til udlejning af fælleshuset.</p><button type="button" class="primary fill-contract" data-fill-contract="friend-pdf">Udfyld kontrakt</button><div class="doc-actions"><a class="primary button" href="./kontrakt-1500.pdf?v=2.6.2" target="_blank" rel="noopener">Åbn PDF ↗</a><a class="secondary button" href="./kontrakt-1500.pdf?v=2.6.2" download="Lejekontrakt-Hjortemosen-1500.pdf">Download</a><button class="secondary" data-share-doc="./kontrakt-1500.pdf?v=2.6.2">Del</button><button class="text-button" data-print="./kontrakt-1500.pdf?v=2.6.2">Print</button></div></article>
   </div>
   <article class="card contract-editor">
     <span class="eyebrow">KLAR TIL AFTALEN</span><h2>Udfyld lejekontrakt</h2>
@@ -106,9 +106,16 @@
     </form>
     <div id="contractReady" class="contract-ready hidden">
       <strong id="filledContractName"></strong>
-      <div class="doc-actions"><a id="openFilledContract" class="secondary button" target="_blank" rel="noopener">Se udfyldt PDF ↗</a><button class="secondary" id="saveFilledContract">Gem fil</button><button class="primary" id="shareFilledContract">Del udfyldt kontrakt</button></div>
-      <p>Tryk på <strong>Del udfyldt kontrakt</strong>, vælg <strong>Mail</strong> eller <strong>Beskeder</strong>, og indsæt modtagerens e-mailadresse eller telefonnummer. Filen følger med. Du sender selv fra Mail eller Beskeder.</p>
-      <div class="doc-actions"><button class="secondary" data-copy-recipient="email">Kopiér e-mailadresse</button><button class="secondary" data-copy-recipient="phone">Kopiér telefonnummer</button></div>
+      <div class="doc-actions"><button type="button" class="primary" id="sendContractEmail">Send via Outlook/Mail</button><a id="openFilledContract" class="secondary button" target="_blank" rel="noopener">Se udfyldt PDF ↗</a><button class="secondary" id="saveFilledContract">Gem fil</button><button class="secondary" id="shareFilledContract">Del via Beskeder m.m.</button></div>
+      <p class="contract-email-help">Vælg <strong>Outlook</strong> eller <strong>Mail</strong> i delingen, og indsæt modtagerens e-mailadresse. Vælg din <strong>Hotmailkonto i Fra</strong>, kontrollér, at kontraktfilen er vedhæftet, og tryk selv på <strong>Send</strong>.</p>
+      <p class="small-note">Hotmailkontoen skal være tilføjet i Outlook eller Mail. Hvis mailappen ikke vises i delingen, brug <strong>Gem fil</strong> og vedhæft kontrakten manuelt.</p>
+      <div class="doc-actions"><button class="secondary" data-copy-recipient="email">Kopiér e-mailadresse</button><button class="secondary" data-copy-recipient="phone">Kopiér telefonnummer</button><a class="contract-sent-link" href="https://outlook.live.com/mail/0/sentitems" target="_blank" rel="noopener">Åbn Sendt post i Hotmail ↗</a></div>
+      <p class="small-note">Kontrollér bagefter <strong>Sendt post i den samme Hotmailkonto</strong>. En besked i <strong>Udbakke</strong> er endnu ikke sendt. Appen kan ikke kontrollere afsendelsen.</p>
+      <div id="contractEmailFallback" class="contract-email-fallback hidden" aria-labelledby="contractEmailFallbackTitle">
+        <strong id="contractEmailFallbackTitle">Vedhæft kontrakten manuelt</strong>
+        <p>Gem kontraktfilen med <strong>Gem fil</strong>. Åbn e-mailkladden, og vedhæft den gemte fil fra <strong>Filer</strong> eller <strong>Downloads</strong>. Kladden indeholder ingen vedhæftning.</p>
+        <a id="contractEmailDraft" class="secondary button" href="#">Åbn e-mailkladde · vedhæft filen</a>
+      </div>
     </div>
   </article>
   <div class="info-note"><svg><use href="#i-file"/></svg><p><strong>Gem, del og udskriv på iPad</strong><br>Åbn den udfyldte PDF, tryk på Del, og vælg Udskriv. Kontrakterne og udfyldningen fungerer offline, når appen er hentet. Mail og Beskeder sender, når der er forbindelse.</p></div></section>
@@ -148,9 +155,9 @@
       <summary><span><strong>Standardpriser</strong><small>Priser og depositum til nye bookinger</small></span></summary>
       <div class="details-content"><p class="muted">Eksisterende aftaler beholder deres priser.</p><form id="settingsForm"><div class="settings-prices"><label>Haveforeningsmedlem (kr.)<input id="memberPrice" type="number" min="0" step="0.01" required inputmode="decimal"></label><label>Ven (kr.)<input id="friendPrice" type="number" min="0" step="0.01" required inputmode="decimal"></label><label>Bestyrelsesmedlem (kr.)<input id="boardPrice" type="number" value="0" readonly aria-describedby="boardSettingNote"></label><label>Standarddepositum (kr.)<input id="defaultDeposit" type="number" min="0" step="0.01" required inputmode="decimal"></label></div><p class="small-note" id="boardSettingNote">Bestyrelsesmedlemmer betaler 0 kr. i leje og altid 500 kr. i depositum.</p><p id="settingsAutoSaveStatus" class="small-note" role="status">Priser gemmes automatisk, når du forlader feltet. Ufærdige felter bevares som kladde.</p><button class="primary" type="submit">Gem standardpriser</button></form></div>
     </details>
-    <div class="card install-card"><div><h2>Brug appen fra hjemmeskærmen</h2><p class="muted">I Safari: Tryk på <strong>Del → Føj til hjemmeskærm</strong>. Vent på “Klar til offlinebrug”, før du bruger appen uden internet.</p></div><span class="brand-mark"><img src="./icon-192.png?v=2.6.1" alt="" width="192" height="192"></span></div>
+    <div class="card install-card"><div><h2>Brug appen fra hjemmeskærmen</h2><p class="muted">I Safari: Tryk på <strong>Del → Føj til hjemmeskærm</strong>. Vent på “Klar til offlinebrug”, før du bruger appen uden internet.</p></div><span class="brand-mark"><img src="./icon-192.png?v=2.6.2" alt="" width="192" height="192"></span></div>
   </section>
-  <footer class="app-footer"><span>H/F Hjortemosen · Booking af fælleshus</span><span>Version 2.6.1</span></footer>
+  <footer class="app-footer"><span>H/F Hjortemosen · Booking af fælleshus</span><span>Version 2.6.2</span></footer>
 </main>
 </div>
 <nav class="bottom-nav" aria-label="Appmenu"><button data-view="dashboard" class="active" aria-current="page"><svg><use href="#i-grid"/></svg><span>Overblik</span></button><button data-view="calendar"><svg><use href="#i-calendar"/></svg><span>Kalender</span></button><button data-view="booking" class="nav-booking"><svg><use href="#i-plus"/></svg><span>Ny booking</span></button><button data-view="documents"><svg><use href="#i-file"/></svg><span>Dokumenter</span></button><button data-view="settings"><svg><use href="#i-settings"/></svg><span>Mere</span></button></nav>
@@ -159,7 +166,7 @@
 <dialog id="restoreDialog" aria-labelledby="restoreTitle"><span class="eyebrow">LOKAL BACKUP</span><h2 id="restoreTitle">Gendan sikkerhedskopi</h2><p id="restoreSummary"></p><p>Gendannelse erstatter dine nuværende data, kladder og underskrift med den valgte kopi. Din nuværende version gemmes i backuphistorikken, hvis lageret er tilgængeligt.</p><p id="restoreError" class="warning hidden" role="alert"></p><div class="actions"><button type="button" id="cancelRestore" class="secondary">Annuller</button><button type="button" id="confirmRestore" class="primary">Gendan denne backup</button></div></dialog>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <section id="calendarPrint" aria-label="Kalender til udskrivning"></section>
-<script src="./data.js?v=2.6.1"></script><script src="./backup.js?v=2.6.1"></script><script src="./native-bridge.js?v=2.6.1"></script><script src="./app.js?v=2.6.1"></script>
-<script src="./contract-libs.js?v=2.6.1"></script><script src="./contracts.js?v=2.6.1"></script><script src="./signature-pad.js?v=2.6.1"></script><script src="./contract-ui.js?v=2.6.1"></script>
+<script src="./data.js?v=2.6.2"></script><script src="./backup.js?v=2.6.2"></script><script src="./native-bridge.js?v=2.6.2"></script><script src="./app.js?v=2.6.2"></script>
+<script src="./contract-libs.js?v=2.6.2"></script><script src="./contracts.js?v=2.6.2"></script><script src="./signature-pad.js?v=2.6.2"></script><script src="./contract-ui.js?v=2.6.2"></script>
 </body>
 </html>

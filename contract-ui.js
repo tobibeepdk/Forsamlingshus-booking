@@ -3,7 +3,7 @@
  'use strict';
  const form=$('#contractForm'),template=$('#contractTemplate'),booking=$('#contractBooking'),status=$('#contractStatus'),error=$('#contractError');
  const fields=Object.keys(HjortContracts.labels),input=key=>$('#contract-'+key);
- let ready=null,revision=0,busy=false,bookingSnapshot='',restoring=false,draftBlocked=false,baseRaw=null,lastInkSave=0;
+ let ready=null,revision=0,busy=false,emailBusy=false,bookingSnapshot='',restoring=false,draftBlocked=false,baseRaw=null,lastInkSave=0;
  const draftKey=HjortBackup.keys.contract;
  function autoStatus(text){$('#contractAutoSaveStatus').textContent=text;}
  function saveContract(){
@@ -18,7 +18,7 @@
   }catch{autoStatus('Kontraktkladden kunne ikke gemmes. Lad formularen være åben og frigør lagerplads.');return false;}
  }
  function snapshot(b){return b?JSON.stringify(Object.fromEntries(['name','phone','address','email','date','price','deposit','type'].map(key=>[key,b[key]]))):'';}
- function invalidate(){revision++;if(ready)URL.revokeObjectURL(ready.url);ready=null;$('#contractReady').classList.add('hidden');error.classList.add('hidden');status.textContent='Ret oplysningerne, og tryk på Lav udfyldt kontrakt.';}
+ function invalidate(){revision++;if(ready)URL.revokeObjectURL(ready.url);ready=null;$('#contractReady').classList.add('hidden');$('#contractEmailFallback').classList.add('hidden');$('#contractEmailDraft').href='#';error.classList.add('hidden');status.textContent='Ret oplysningerne, og tryk på Lav udfyldt kontrakt.';}
  const signaturePad=HjortSignature.create($('#signatureCanvas'),(hasInk,detail)=>{invalidate();$('#signatureStatus').textContent=hasInk?'Underskrift tilføjet.':'Ingen håndskrevet underskrift.';$('#clearSignature').disabled=!hasInk;if(!restoring&&(!detail?.drawing||Date.now()-lastInkSave>100)){lastInkSave=Date.now();saveContract();}});
  $('#signatureStatus').textContent='Ingen håndskrevet underskrift.';$('#clearSignature').disabled=true;
  $('#clearSignature').onclick=()=>{signaturePad.clear();};
@@ -68,6 +68,32 @@
  };
  $('#openFilledContract').onclick=async event=>{if(nativeApp&&ready){event.preventDefault();try{await nativeApp.previewFile(ready.file);}catch(err){error.textContent=err.message;error.classList.remove('hidden');}}};
  $('#saveFilledContract').onclick=async()=>{if(!ready)return;if(nativeApp){try{const reply=await nativeApp.shareFile(ready.file);status.textContent=reply.cancelled?'Gemning blev afbrudt. Kontrakten er stadig klar.':'Vælg Gem i Filer i delingsmenuen. Kontrollér, at kontrakten blev gemt.';}catch(err){error.textContent=err.message;error.classList.remove('hidden');}}else{download(ready.file,ready.file.name);toast('Kontrakten er gemt som fil');}};
+ $('#sendContractEmail').onclick=async()=>{
+  if(!ready||emailBusy)return;
+  const recipient=input('email'),address=recipient.value.trim();
+  if(!address||!recipient.checkValidity()){error.textContent='Udfyld en gyldig e-mailadresse til modtageren.';error.classList.remove('hidden');recipient.focus();return;}
+  const current=ready,file=current.file,subject='Lejekontrakt · Hjortemosen · '+input('rentalDate').value;
+  const body='Vedlagt er din udfyldte lejekontrakt for Hjortemosen.\n\nVenlig hilsen\nHjortemosen';
+  const draft=$('#contractEmailDraft'),fallback=$('#contractEmailFallback');
+  function manual(){draft.href='mailto:'+encodeURIComponent(address)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body+'\n\nVedhæft filen '+file.name+' fra Filer, før du sender.');fallback.classList.remove('hidden');}
+  emailBusy=true;$('#sendContractEmail').disabled=true;error.classList.add('hidden');fallback.classList.add('hidden');draft.href='#';
+  try{
+   let cancelled=false;
+   if(nativeApp){const reply=await nativeApp.shareFile(file);cancelled=Boolean(reply.cancelled);}
+   else if(navigator.share&&navigator.canShare?.({files:[file]})){
+    // Start file sharing on the click gesture; clipboard awaits lose Safari activation.
+    await navigator.share({title:subject,text:body,files:[file]});
+   }else{
+    download(file,file.name);manual();status.textContent='Kontraktfilen er hentet. Åbn e-mailkladden, vedhæft filen, vælg din Hotmailkonto i Fra, og tryk selv på Send.';return;
+   }
+   if(ready!==current)return;
+   status.textContent=cancelled?'E-maildeling blev afbrudt. Kontrakten er stadig klar.':'Vælg Outlook eller Mail, indsæt modtageren, vælg Hotmail i Fra, og tryk selv på Send. Kontrollér derefter Sendt post i den samme konto. Appen kan ikke kontrollere afsendelsen.';
+  }catch(err){
+   if(ready!==current)return;
+   if(err.name==='AbortError')status.textContent='E-maildeling blev afbrudt. Kontrakten er stadig klar.';
+   else{manual();error.textContent='E-maildeling kunne ikke åbnes. Brug Gem fil, og vedhæft kontrakten i Outlook eller Mail.';error.classList.remove('hidden');status.textContent='Kontrakten er stadig klar. Du sender selv fra din Hotmailkonto.';}
+  }finally{emailBusy=false;$('#sendContractEmail').disabled=false;}
+ };
  $('#shareFilledContract').onclick=async()=>{
   if(!ready)return;const file=ready.file;
   try{
