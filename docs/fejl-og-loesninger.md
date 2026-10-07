@@ -94,3 +94,25 @@ Bevis/scope: 125 faktiske Node-tests bestod i /private/tmp/hjortemosen-email-202
 ### Test- og cachemiljø blev afgrænset fra mailfunktionen
 
 En negativ tekstassertion ramte delstrengen “er Sendt” i “derefter Sendt post”. Testens ordgrænser blev rettet; produktionskode blev ikke ændret for dette fixtureproblem. En tidligere lokal origin viste cacheversion 2.4.0. Prøven blev flyttet til en frisk port og synlig version 2.6.2 blev kontrolleret før fortsættelse. Den første serverstart var blokeret af sandboxen; den godkendte localhost-server startede. Disse hændelser er test-/miljøproblemer og dokumenterer ingen ny runtime-fejl i appen.
+
+
+## 2026-10-07 · webversion 2.6.3 · kalender-PDF og bestyrelsestekst
+
+### Udskriv / PDF reagerede ikke på brugerens enhed
+
+Symptom: Brugeren viste kalenderen i den installerede app og oplyste, at Udskriv / PDF ikke gjorde noget. Den tidligere webknap kaldte alene window.print(). Årsag/sikkerhed: Høj sikkerhed for den tidligere kodeadfærd; en begrænsning i den konkrete browser-/PWA-udskriftsmenu er sandsynlig, men den præcise iOS-årsag og en universel platformfejl er ikke dokumenteret.
+Afprøvet løsning: Webknappen genererer nu faktiske PDF-bytes offline med en A4-kalender og en komplet bookingliste. Et synligt panel tilbyder Åbn PDF, Hent PDF og Del / Gem PDF. Fildeling starter fra et nyt brugertryk, efter filen er klar. Direkte browserudskrivning og native udskriftsbro bevares. Ændret måned eller booking revokerer den gamle fil; forsinket generering kan ikke gøre en gammel måned klar. Delingsannullering bevarer filen og meldes aldrig som en udskrift.
+Forebyggelse: Knyt filen til et snapshot af måned og bookinger. Afprøv faktiske PDF-bytes, betalingsstatus inklusive depositum, dubletter, skuddag, seks kalenderuger og lange tekstfelter. En afsluttet deling er ikke bevis for gemning eller fysisk udskrivning.
+Bevis/scope: 139 faktiske Node-tests bestod i /private/tmp/hjortemosen-print-20261007, heraf otte rendererprøver og seks nye UI-prøver. Real-PDF-prøver parser indhold og sidegrænser; en særskilt syntetisk PDF med 81 bookinger og 15 sider blev genereret fra den aktuelle renderer, og side 1, 2 og 15 blev renderet og visuelt kontrolleret. Browseren på friske lokale origins viste version 2.6.3 og et klart PDF-panel efter et faktisk tryk. Endeligt layout ved 390×844 og 820×1180 havde ingen vandret overflow; alle PDF-panelhandlinger er mindst 48 px høje. Ingen consolefejl/advarsler blev registreret i den endelige lokale browserprøve. Dette beviser ikke en fysisk iPad-udskrift.
+
+### Fund før udgivelse og særskilte testbegrænsninger
+
+Kodegennemgang fandt en ventende fejlet PDF-generering, der kunne efterlade teksten Laver kalender-PDF efter et månedsskift. En ny regressionstest fejlede før rettelsen og bestod efter; knappen aktiveres igen med en tydelig besked om den ændrede kalender. Rendererens dubletindikator kunne overlappe betalingsstatus i en seksugers måned; den blev rettet og en PDF-geometritest kontrollerer mindst 2 pt afstand. Visuel mobilkontrol fandt, at den nye tredje værktøjsknap kunne stikke ud over skærmkanten; max-width:100% lader den bryde til en ny linje. Disse fejl blev fundet og rettet før udgivelse.
+
+De første fire integrationstests med rigtige PDF-bytes fejlede, fordi VM-fixturen indsprøjtede hostens Array/Object-konstruktører, mens literalerne tilhørte VM-konteksten. PDFLibs instanceof-validering afviste derfor gyldige side-/farveobjekter. Sikkerheden er høj ud fra fejlsvar og en målrettet fixtureprøve. Array/Object bevares nu i samme VM-realm, mens bytekonstruktører deles til læsning af filen; produktionskoden blev ikke ændret for denne testfejl.
+
+Browserværktøjets Hent PDF/downloadMedia-forløb gav timeout. Åbn PDF blev derefter afvist af browserens sikkerhedspolitik; den blokerede navigation blev ikke omgået. PDF-panelgenerering og read-only linkkontrol er browserbevis; de uafhængigt genererede PDF-bytes og renderinger er særskilt bevis. Ingen systemdeling, filgemning eller fysisk udskrivning på iPad/iPhone blev gennemspillet. Den tidligere native kildepakke forbliver version 2.6.1.
+
+### Fjernet forklarende tekst uden ændret betaling
+
+Brugeren bad om at slette Bestyrelsesmedlemmer har gratis leje. Kun denne sætning er fjernet fra formularen. Pris er fortsat 0 kr. og depositum 500 kr. Browserens faktiske bestyrelsesvalg viste Depositum: 500 kr., readonly pris 0 og readonly depositum 500; den slettede sætning findes ikke i bookingformularen. Ingen booking blev oprettet i browserprøven.
