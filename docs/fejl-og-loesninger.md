@@ -116,3 +116,20 @@ Browserværktøjets Hent PDF/downloadMedia-forløb gav timeout. Åbn PDF blev de
 ### Fjernet forklarende tekst uden ændret betaling
 
 Brugeren bad om at slette Bestyrelsesmedlemmer har gratis leje. Kun denne sætning er fjernet fra formularen. Pris er fortsat 0 kr. og depositum 500 kr. Browserens faktiske bestyrelsesvalg viste Depositum: 500 kr., readonly pris 0 og readonly depositum 500; den slettede sætning findes ikke i bookingformularen. Ingen booking blev oprettet i browserprøven.
+
+
+## 2026-10-07 · webversion 2.6.4 · manuel Gmail og modtaget post
+
+Brugerønske og valg: Appen skal bruges sammen med Gmail til at modtage og sende post. Brugeren valgte at åbne Gmail på iPad, selv læse post og selv trykke Send. Dette er en udvidelse af det eksisterende mailforløb, ikke en dokumenteret ny afsendelsesfejl.
+
+Tidligere begrænsning/årsag: Knap, vejledning og status nævnte kun Outlook/Mail og Hotmail. Delingskoden var allerede fælles for iPadens mailapps. Høj sikkerhed ud fra den udgivne 2.6.3-kilde; ingen Gmailkonto eller konkret Gmail-installation blev inspiceret.
+
+Afprøvet løsning: Send via Gmail deler den allerede genererede udfyldte PDF/Word-fil med eventuel underskrift. Vejledningen kræver Gmail i delingsmenuen, korrekt Googlekonto i Fra, modtager, vedhæftning og eget tryk på Send. Hvis Gmail ikke vises, kan filen gemmes og vedhæftes fra Filer i Gmail. Outlook/Mail kan stadig vælges i delingsmenuen. Mailto-fallback forklarer, at iPadens standardmailapp åbnes uden vedhæftning; Gmail skal vælges som standard eller åbnes manuelt. Annullering, fejl og gamle filer behandles som før uden nogen sendt-bekræftelse.
+
+Modtaget post: Dokumenter har Gmail-genveje, som åbner https://mail.google.com/ i browseren. Brugeren vælger sin konto via profilbilledet og Indbakke eller Sendt. Der bruges ingen udokumenteret garanti om en bestemt konto eller mappe. Selve postlæsningen foregår i Gmail. Bookingappen har ingen OAuth-adgang eller indbygget indbakke; den kan hverken vælge systemets delingsmål eller kontrollere Gmail-afsendelse.
+
+Forebyggelse og kilder: En afsluttet fildeling tæller ikke som sendt mail. Kontoen skal kontrolleres både før afsendelse og i Sendt. Start delingen direkte fra brugertrykket med den færdige fil; afvent ikke udklipsholderen først. Googles iPad-vejledning dokumenterer vedhæftning fra Filer: https://support.google.com/mail/answer/6584?hl=da&co=GENIE.Platform%3DiOS . Standardmailapp er særskilt: https://support.google.com/accounts/answer/16262222?hl=da . Flere konti kan give en anden standardkonto: https://support.google.com/accounts/answer/1721977?hl=da .
+
+Bevis/scope: Fire Gmail-assertioner fejlede før de ændrede vejledningstekster; derefter bestod alle 26 målrettede kontrakt-UI-tests. To nye tests kontrollerer faktisk udfyldt og signeret Word ZIP med identiske PNG-signaturbytes samt en fejlet ventende deling, der ikke må gendanne en gammel kladdegenvej. PDF-tests kontrollerer faktisk fil, felter og underskriftsbillede. Alle 141 Node-tests bestod i /private/tmp/hjortemosen-gmail-20261007. Den lokale browser på en frisk origin viste 2.6.4, Gmail-genveje og Send via Gmail efter generering af en syntetisk kontrakt; manglende modtager blev afvist med filen bevaret. Layout ved 820×1180 og 390×844 havde ingen vandret overflow; Gmail-genveje var mindst 48 px høje. Ingen consolefejl/advarsler blev registreret.
+
+Begrænsninger: Filtransport er testet gennem simulerede share/native-grænser med reelle kontraktbytes. Der blev ikke sendt mail, læst en mailbox eller gennemspillet Gmail-systemdeling på en fysisk iPad. Eksterne Gmail-links blev kun kontrolleret i DOM mod den officielle generiske destination. Den tidligere blokerede blob-PDF-navigation blev ikke forsøgt igen. Native kildepakken forbliver 2.6.1; ændringen udgives i webappen.
