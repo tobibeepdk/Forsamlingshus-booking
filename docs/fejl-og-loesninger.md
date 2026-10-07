@@ -79,3 +79,18 @@ Forebyggelse/bevis: Pakning afviser enhver kilde, der afviger fra den udgivne ve
 Symptom: Native UI-testbuildet kompilerede, men første teststart stod stille i testmanagerd/xpcproxy. Årsag/sikkerhed: Procesprøver viste ventende dyld_shared_cache/mmap i testværktøjets OS-proces før testforløbet; høj sikkerhed for placeringen af opstartsblokeringen, den underliggende OS-årsag er ukendt. Der er ikke dokumenteret en runtime-fejl i Hjortemosen ud fra dette.
 Afprøvet håndtering: Gem procesprøver og log, genstart kun den dedikerede QA-simulator uden at slette data, og afgræns én genprøvning. Beståede diskprøver og compile-log er separate beviser; de tæller ikke som et gennemført WKWebView/UI-forløb. Ret ikke produktionskode for testmanagerens opstart.
 Bevis: `qa/native/testmanager-startup-sample.txt`, `qa/native/ui-test-startup-sample.txt` og de særskilte build-/testlogs i udgivelsen 2.6.1. Den ene genprøvning ramte samme OS-blokering før app-testen: 0 gennemførte UI-tests. Containerinspektion fandt ingen Hjortemosen-appcontainer, så der rapporteres ingen rigtig QA-backupfil eller native screenshot. Den dedikerede simulator blev lukket uden datasletning. Native QA-status skelner dette fra de 18 beståede diskprøver og de to beståede builds.
+
+
+## 2026-10-07 · webversion 2.6.2 · manuel e-mail fra Hotmail
+
+### Delingsknappen blev opfattet som en afsendelse
+
+Symptom: Brugeren fandt ingen kontraktmail i Hotmails Sendt post efter brug af appens deling.
+Årsag/sikkerhed: Den eksisterende kode kaldte alene systemets fildeling. Den indeholdt ingen mailafsendelse eller kontrol af en mailbox. Høj sikkerhed for denne kodeadfærd; brugerens konkrete mailkonto og eventuelle Udbakke er ikke inspiceret.
+Afprøvet løsning: Brugeren valgte selv at trykke Send i Outlook/Mail. Den nye knap Send via Outlook/Mail deler den faktisk genererede PDF/Word-fil og kræver en gyldig modtageradresse. Vejledningen kræver modtager, Hotmail i Fra, vedhæftning og manuelt Send; en genvej åbner Hotmails Sendt post. Uden fildeling hentes den udfyldte fil og en mailto-kladde kræver manuel vedhæftning. Ved delingsfejl bevares filen og Gem fil kan bruges. Annullering meldes aldrig som afsendelse. Ændring af kontrakten fjerner den gamle fil og mailto-kladde; en ventende deling overskriver ikke nyere status.
+Forebyggelse: Et afsluttet share-kald er ikke bevis for en sendt e-mail. Mailto kan ikke vedhæfte filen. Clipboard-afventning før navigator.share kan miste Safaris brugeraktivering, så fildelingen starter direkte fra trykket.
+Bevis/scope: 125 faktiske Node-tests bestod i /private/tmp/hjortemosen-email-20261007, heraf otte nye e-mailprøver med reelt udfyldte PDF/Word-bytes, PDF-underskriftsbillede, validering, annullering, fejl, native bridge og samtidige ændringer. Browseren på en frisk lokal origin viste 2.6.2, lavede en testkontrakt, afviste manglende e-mail og gendannede felter efter genåbning; ingen consolefejl/advarsler. Web Share blev startet, men hostens systemdelingsforløb kunne ikke gennemspilles af browserværktøjet. Ingen e-mail blev sendt, ingen Hotmail-mailbox blev kontrolleret, og ingen fysisk iPad blev testet. Den tidligere native kildepakke forbliver 2.6.1.
+
+### Test- og cachemiljø blev afgrænset fra mailfunktionen
+
+En negativ tekstassertion ramte delstrengen “er Sendt” i “derefter Sendt post”. Testens ordgrænser blev rettet; produktionskode blev ikke ændret for dette fixtureproblem. En tidligere lokal origin viste cacheversion 2.4.0. Prøven blev flyttet til en frisk port og synlig version 2.6.2 blev kontrolleret før fortsættelse. Den første serverstart var blokeret af sandboxen; den godkendte localhost-server startede. Disse hændelser er test-/miljøproblemer og dokumenterer ingen ny runtime-fejl i appen.
