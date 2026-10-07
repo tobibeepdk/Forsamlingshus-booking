@@ -1,4 +1,4 @@
-# Hjortemosen Booking – webversion 2.6.2
+# Hjortemosen Booking – webversion 2.6.3
 
 Booking af H/F Hjortemosens fælleshus på iPad. Appen findes som webapp/PWA og som et native iPad-projekt med de samme bookingfunktioner. Begge arbejder med lokale oplysninger og kan bruges offline, når appens filer er hentet.
 
@@ -6,7 +6,7 @@ Booking af H/F Hjortemosens fælleshus på iPad. Appen findes som webapp/PWA og 
 
 De fem primære faner er **Overblik**, **Kalender**, **Ny booking**, **Dokumenter** og **Mere**. Overblik viser kommende bookinger, manglende betaling og den næste booking. Under Mere står backup først; **Gemte lejere** og **Blacklist** har egne genveje. Standardpriser og **Flyt eller del data** kan foldes ud efter behov. **← Tilbage** på undersiderne fører til den forrige skærm og bevarer kladden. Touchfelter og formularer er tilpasset iPad i både højformat og bredformat.
 
-Kalenderens **Udskriv / PDF** udskriver den viste måned. En booking oprettes i kalenderen med **Gem booking**. Automatisk gemning af en ufærdig formular opretter alene en kladde.
+Kalenderens **Udskriv / PDF** laver en rigtig PDF af den viste måned i webappen. **Åbn PDF** viser filen, hvor den kan udskrives via **Del → Udskriv**. **Del / Gem PDF** åbner fildeling til eksempelvis Filer; **Hent PDF** henter filen. PDF viser månedens kalender og en komplet bookingliste med betalingsstatus. PDF-genereringen virker offline, når appfilerne er hentet. **Åbn udskriftsmenu** bevarer direkte browserudskrivning som et alternativ. Den tidligere native kildeversion bruger fortsat iPadens udskriftsmenu. En booking oprettes i kalenderen med **Gem booking**. Automatisk gemning af en ufærdig formular opretter alene en kladde.
 
 ## Webapp og GitHub Pages
 

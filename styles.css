@@ -170,15 +170,25 @@ input,select,textarea{min-width:0;max-width:100%}
 }
 
 /* Calendar printing and the free board-member category. */
-.calendar-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end}
+.calendar-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;max-width:100%}
 .calendar-actions button{min-height:48px;white-space:nowrap}
 .calendar-print-help{margin:-10px 0 20px}
+.calendar-pdf-status{margin:0 0 16px;line-height:1.65}
+.calendar-pdf-status:empty{margin:0}
+.calendar-pdf-error{margin:0 0 20px;line-height:1.6}
+.calendar-pdf-ready{display:flex;align-items:center;flex-wrap:wrap;gap:16px;margin:0 0 20px;padding:20px;background:#eef5ed;border:1px solid #d4e3d0;border-radius:16px}
+.calendar-pdf-ready>strong{flex:1 1 240px;min-width:0;font-size:15px;line-height:1.6;overflow-wrap:anywhere}
+.calendar-pdf-actions{display:flex;flex-wrap:wrap;gap:10px;max-width:100%}
+.calendar-pdf-actions>*{min-height:48px;font-size:14px;white-space:normal;text-align:center;line-height:1.5}
 .segmented{grid-template-columns:2fr 1fr 1.9fr}
 input[readonly]{background:#f1f4ed;color:var(--green)}
 #calendarPrint{display:none}
 @media(max-width:700px){
   #calendar .page-heading{flex-wrap:wrap}
   .calendar-actions{justify-content:flex-start}
+  .calendar-pdf-ready{padding:16px}
+  .calendar-pdf-actions{width:100%}
+  .calendar-pdf-actions>*{flex:1 1 140px}
 }
 @media(max-width:480px){.segmented{grid-template-columns:1fr}}
 @page{size:A4 landscape;margin:10mm}

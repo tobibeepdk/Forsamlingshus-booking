@@ -1,5 +1,5 @@
 'use strict';
-const APP_VERSION='2.6.2';
+const APP_VERSION='2.6.3';
 const nativeApp=window.HjortNative?.available?window.HjortNative:null;
 let nativeReady=!nativeApp;
 if(nativeApp)document.body.inert=true;
@@ -11,6 +11,7 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 let dataBaseRaw=null,formBaseBooking=null;
 let storageBlocked=true;
 let data=HjortData.clone(defaults), monthCursor=new Date(), deferredPrompt=null, formHydrating=false, draftBlocked=false, draftBaseRaw=null, pendingImport=null,pendingFullImport=null,importBaseRaw=null,settingsDraft=null,settingsBaseRaw=null,settingsDraftBlocked=false,blacklistBaseRaw=null,blacklistDraftBlocked=false,pendingRestore=null,restoreBaseRaw=null, legacyBookingType=null, printTitle=null, toastTimer;
+let calendarPdf=null,calendarPdfBusy=false,calendarShareBusy=false;
 function load(){try { const raw=localStorage.getItem(KEY);dataBaseRaw=raw;return raw?HjortData.validate(JSON.parse(raw)):HjortData.clone(defaults); }catch{storageBlocked=true;return HjortData.clone(defaults);}}
 function stored(key){try{return localStorage.getItem(key);}catch{return null;}}
 function storageError(text){$('#storageError').textContent=text;$('#storageError').classList.remove('hidden');}
@@ -28,6 +29,7 @@ const backupManager=HjortBackup.create({appVersion:APP_VERSION,onSnapshot:native
 window.HjortAutoBackup=backupManager;
 if(nativeApp){
  $('#calendarPrintHelp').textContent='Udskriv den viste måned, eller gem den som PDF fra iPadens udskriftsmenu.';
+ $('#printCalendarDirect').classList.add('hidden');
  $('#nativeBackupPanel').classList.remove('hidden');$('#browserBackupFiles').classList.add('hidden');$('.install-card').classList.add('hidden');
  nativeApp.subscribe(state=>{const el=$('#nativeBackupStatus');el.classList.toggle('warning',state.state==='error');el.textContent=state.state==='saved'?'Backupfil gemt: '+new Intl.DateTimeFormat('da-DK',{dateStyle:'short',timeStyle:'short'}).format(new Date(state.savedAt)):state.state==='saving'?'Gemmer backupfil på din iPad…':'Backupfilen kunne ikke gemmes. '+(state.message||'Tryk Prøv backup igen.');});
  $('#nativeBackupOpen').onclick=async()=>{try{await nativeApp.openBackups();}catch(error){toast(error.message);}};
@@ -80,6 +82,7 @@ function renderUpcoming(){
 function bindBookingButtons(){$$('[data-edit]').forEach(x=>x.onclick=()=>editBooking(x.dataset.edit));$$('[data-new]').forEach(x=>x.onclick=()=>newBooking());}
 $('#bookingSearch').oninput=()=>{renderUpcoming();bindBookingButtons();};$('#bookingFilter').onchange=()=>{renderUpcoming();bindBookingButtons();};
 function renderCalendar(){
+ if(calendarPdf&&calendarPdf.snapshot!==calendarPdfSnapshot())clearCalendarPdf('Kalenderen er ændret. Tryk på Udskriv / PDF for at lave en ny fil.');
  const y=monthCursor.getFullYear(),m=monthCursor.getMonth();$('#monthLabel').textContent=new Intl.DateTimeFormat('da-DK',{month:'long',year:'numeric'}).format(monthCursor);
  const first=(new Date(y,m,1).getDay()+6)%7,days=new Date(y,m+1,0).getDate();let html='';
  for(let i=0;i<first;i++)html+='<div class="day empty"></div>';
@@ -119,7 +122,38 @@ function prepareCalendarPrint(){
  document.body.classList.add('printing-calendar');
 }
 function finishCalendarPrint(){document.body.classList.remove('printing-calendar');if(printTitle!==null){document.title=printTitle;printTitle=null;}}
-$('#printCalendar').onclick=async()=>{prepareCalendarPrint();try{if(nativeApp){await nativeApp.printCalendar(await nativeCalendarDocument());finishCalendarPrint();}else window.print();}catch{finishCalendarPrint();toast('Udskriftsmenuen kunne ikke åbnes. Prøv igen.');}};
+function calendarPdfSnapshot(){return JSON.stringify({year:monthCursor.getFullYear(),month:monthCursor.getMonth()+1,bookings:data.bookings});}
+function clearCalendarPdf(message=''){
+ if(calendarPdf)URL.revokeObjectURL(calendarPdf.url);calendarPdf=null;
+ $('#calendarPdfReady').classList.add('hidden');$('#openCalendarPdf').href='#';$('#saveCalendarPdf').href='#';$('#calendarPdfError').classList.add('hidden');$('#calendarPdfStatus').textContent=message;
+}
+function currentCalendarPdf(){if(calendarPdf&&calendarPdf.snapshot!==calendarPdfSnapshot())clearCalendarPdf('Kalenderen er ændret. Tryk på Udskriv / PDF for at lave en ny fil.');return calendarPdf;}
+clearCalendarPdf();
+$('#printCalendar').onclick=async()=>{
+ if(calendarPdfBusy)return;calendarPdfBusy=true;$('#printCalendar').disabled=true;
+ if(nativeApp){try{prepareCalendarPrint();await nativeApp.printCalendar(await nativeCalendarDocument());}catch{toast('Udskriftsmenuen kunne ikke åbnes. Prøv igen.');}finally{finishCalendarPrint();calendarPdfBusy=false;$('#printCalendar').disabled=false;}return;}
+ clearCalendarPdf();const snapshot=calendarPdfSnapshot(),source=JSON.parse(snapshot),month=String(source.month).padStart(2,'0');$('#calendarPdfStatus').textContent='Laver kalender-PDF…';
+ try{
+  const bytes=await HjortCalendarPDF.build(source);
+  if(snapshot!==calendarPdfSnapshot()){$('#calendarPdfStatus').textContent='Kalenderen er ændret. Tryk på Udskriv / PDF igen.';return;}
+  const name=`Hjortemosen-kalender-${source.year}-${month}.pdf`,file=new File([bytes],name,{type:'application/pdf'}),url=URL.createObjectURL(file);calendarPdf={file,url,snapshot};
+  $('#calendarPdfName').textContent=name;$('#openCalendarPdf').href=url;$('#saveCalendarPdf').href=url;$('#saveCalendarPdf').download=name;$('#calendarPdfReady').classList.remove('hidden');$('#calendarPdfStatus').textContent='PDF er klar. Åbn PDF, og vælg Del → Udskriv, eller gem den i Filer.';
+ }catch(error){if(snapshot===calendarPdfSnapshot()){$('#calendarPdfError').textContent=error.message||'PDF kunne ikke laves. Prøv igen.';$('#calendarPdfError').classList.remove('hidden');$('#calendarPdfStatus').textContent='Dine bookinger og kladder er bevaret.';}else $('#calendarPdfStatus').textContent='Kalenderen er ændret. Tryk på Udskriv / PDF igen.';}
+ finally{calendarPdfBusy=false;$('#printCalendar').disabled=false;}
+};
+$('#printCalendarDirect').onclick=()=>{prepareCalendarPrint();try{window.print();}catch{toast('Udskriftsmenuen kunne ikke åbnes. Brug Udskriv / PDF og åbn PDF-filen i stedet.');}finally{finishCalendarPrint();}};
+$('#openCalendarPdf').onclick=event=>{if(!currentCalendarPdf())event.preventDefault();};
+$('#saveCalendarPdf').onclick=event=>{if(!currentCalendarPdf())event.preventDefault();};
+$('#shareCalendarPdf').onclick=async()=>{
+ const current=currentCalendarPdf();if(!current||calendarShareBusy)return;
+ calendarShareBusy=true;$('#shareCalendarPdf').disabled=true;$('#calendarPdfError').classList.add('hidden');
+ try{
+  if(!navigator.share||!navigator.canShare?.({files:[current.file]})){$('#calendarPdfStatus').textContent='Fildeling er ikke tilgængelig. Brug Åbn PDF eller Hent PDF, og gem eller udskriv filen derfra.';return;}
+  await navigator.share({title:'Bookingkalender · Hjortemosen',files:[current.file]});
+  if(calendarPdf===current)$('#calendarPdfStatus').textContent='Delingsmenuen er afsluttet. Kontrollér, at PDF-filen blev gemt eller udskrevet.';
+ }catch(error){if(calendarPdf!==current)return;if(error.name==='AbortError')$('#calendarPdfStatus').textContent='Deling blev afbrudt. PDF-filen er stadig klar.';else{$('#calendarPdfError').textContent='Deling kunne ikke åbnes. Brug Åbn PDF eller Hent PDF.';$('#calendarPdfError').classList.remove('hidden');}}
+ finally{calendarShareBusy=false;$('#shareCalendarPdf').disabled=false;}
+};
 window.addEventListener('beforeprint',()=>{if($('#calendar').classList.contains('active')||document.body.classList.contains('printing-calendar'))prepareCalendarPrint();});
 window.addEventListener('afterprint',finishCalendarPrint);
 function renterBookings(r){return data.bookings.filter(b=>HjortData.normalize(b.name)===HjortData.normalize(r.name)&&HjortData.normalize(b.houseNo)===HjortData.normalize(r.houseNo)).sort((a,b)=>b.date.localeCompare(a.date));}
