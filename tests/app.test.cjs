@@ -23,10 +23,11 @@ function boot(seed, draft, options={}) {
   if (seed !== undefined) store.set(KEY, typeof seed === 'string' ? seed : JSON.stringify(seed));
   if (draft) store.set('hjortemosen_booking_draft_v1', JSON.stringify(draft));
   for(const [key,value] of Object.entries(options.extraStorage||{}))store.set(key,value);
-  const ctx = vm.createContext({document:{querySelector:node,querySelectorAll:s=>s==='[name=renterType]'?radioTypes.map(t=>node(`[name=renterType][value="${t}"]`)):s==='.view'?viewNames.map(id=>node('#'+id)):s==='[data-view]'?viewNames.map(id=>node('nav-'+id)):s==='[data-back]'?[node('back-button')]:[],addEventListener(){},visibilityState:'visible',createElement:()=>node('link'),body,title:''},localStorage:{getItem:k=>{if(options.unavailable)throw new Error("Storage unavailable");return store.get(k)||null},setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},window:{addEventListener:(type,handler)=>events.set(type,handler),scrollTo(){},print:()=>prints.push({html:node('#calendarPrint').innerHTML,title:ctx.document.title,printing:body.classList.contains('printing-calendar')}),matchMedia:()=>({matches:false})},navigator:{onLine:true,...(options.sw?{serviceWorker:options.sw}:{})},crypto:require('node:crypto').webcrypto,structuredClone,Intl,Date,Number,String,Boolean,JSON,Array,Object,Set,Map,URL,Blob,File,console,setTimeout:()=>1,clearTimeout(){},confirm:()=>true,alert(){},fetch:async()=>({ok:true}),location:{hash:'',href:'http://localhost/app/',reload(){}}});
+  // Keep VM Array/Object constructors with their literals; PDFLib validates both by instanceof.
+  const ctx = vm.createContext({document:{querySelector:node,querySelectorAll:s=>s==='[name=renterType]'?radioTypes.map(t=>node(`[name=renterType][value="${t}"]`)):s==='.view'?viewNames.map(id=>node('#'+id)):s==='[data-view]'?viewNames.map(id=>node('nav-'+id)):s==='[data-back]'?[node('back-button')]:[],addEventListener(){},visibilityState:'visible',createElement:()=>node('link'),body,title:''},localStorage:{getItem:k=>{if(options.unavailable)throw new Error("Storage unavailable");return store.get(k)||null},setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},window:{addEventListener:(type,handler)=>events.set(type,handler),scrollTo(){},print:()=>prints.push({html:node('#calendarPrint').innerHTML,title:ctx.document.title,printing:body.classList.contains('printing-calendar')}),matchMedia:()=>({matches:false})},navigator:{onLine:true,...(options.sw?{serviceWorker:options.sw}:{})},crypto:require('node:crypto').webcrypto,structuredClone,Intl,Date,Number,String,Boolean,JSON,Uint8Array,ArrayBuffer,TextEncoder,TextDecoder,Set,Map,URL,Blob,File,console,setTimeout:()=>1,clearTimeout(){},confirm:()=>true,alert(){},fetch:async()=>({ok:true}),location:{hash:'',href:'http://localhost/app/',reload(){}}});
   ctx.document.documentElement=node('html');
   if(options.nativeHandler)ctx.webkit={messageHandlers:{hjortemosen:options.nativeHandler}};
-  for(const file of ['data.js','backup.js','native-bridge.js','app.js']) if(fs.existsSync(path.join(__dirname,'..',file))) {vm.runInContext(fs.readFileSync(path.join(__dirname,'..',file),'utf8'),ctx);if(file==='native-bridge.js')ctx.window.HjortNative=ctx.HjortNative;}
+  for(const file of ['data.js','backup.js','native-bridge.js','contract-libs.js','calendar-pdf.js','app.js']) if(fs.existsSync(path.join(__dirname,'..',file))) {vm.runInContext(fs.readFileSync(path.join(__dirname,'..',file),'utf8'),ctx);if(file==='native-bridge.js')ctx.window.HjortNative=ctx.HjortNative;}
   return {ctx,node,store,events,prints,run:s=>vm.runInContext(s,ctx)};
 }
 const booking={id:'b1',date:'2026-12-12',name:'Anna',houseNo:'7',phone:'12345678',email:'a@example.dk',type:'member',price:1000,deposit:500,paid:true,depositPaid:false,notes:''};
@@ -251,7 +252,7 @@ test('reusing a legacy other renter chooses friend pricing for a new agreement',
 test('calendar printing uses the selected month and a complete Monday-first six-week grid',()=>{
  const d=seed();d.bookings=[{...booking,date:'2026-03-31',name:'Åse & <Gæst>'},{...booking,id:'outside',date:'2026-04-01',name:'Udenfor måneden'}];
  const app=boot(d);app.run('monthCursor=new Date(2026,2,1)');
- assert.equal(typeof app.node('#printCalendar').onclick,'function');app.node('#printCalendar').onclick();
+ assert.equal(typeof app.node('#printCalendarDirect').onclick,'function');app.node('#printCalendarDirect').onclick();
  const output=app.prints[0];assert.match(output.html,/marts 2026/);
  assert.match(output.html,/Åse &amp; &lt;Gæst&gt;/);assert.doesNotMatch(output.html,/Udenfor måneden/);
  assert.equal((output.html.match(/<td[ >]/g)||[]).length,42);
@@ -261,9 +262,9 @@ test('calendar printing uses the selected month and a complete Monday-first six-
 });
 test('calendar print reflects edits and leaves booking data unchanged',()=>{
  const app=boot(seed());app.run('monthCursor=new Date(2026,11,1)');
- assert.equal(typeof app.node('#printCalendar').onclick,'function');
- app.node('#printCalendar').onclick();app.run("data.bookings[0].name='Nyt navn'");
- const before=app.run('JSON.stringify(data)');app.node('#printCalendar').onclick();
+ assert.equal(typeof app.node('#printCalendarDirect').onclick,'function');
+ app.node('#printCalendarDirect').onclick();app.run("data.bookings[0].name='Nyt navn'");
+ const before=app.run('JSON.stringify(data)');app.node('#printCalendarDirect').onclick();
  assert.match(app.prints[1].html,/Nyt navn/);assert.doesNotMatch(app.prints[1].html,/Anna/);
  assert.equal(app.run('JSON.stringify(data)'),before);
  app.events.get('afterprint')();assert.equal(app.node('body').classList.contains('printing-calendar'),false);
@@ -276,13 +277,13 @@ test('a backup cannot introduce a charge for a board member',()=>{
 });
 test('calendar printing includes leap day and omits adjacent-month bookings',()=>{
  const d=seed();d.bookings=[{...booking,date:'2024-02-29',name:'Skuddag'},{...booking,id:'march',date:'2024-03-01',name:'Martsbooking'}];const app=boot(d);
- app.run('monthCursor=new Date(2024,1,1)');assert.equal(typeof app.node('#printCalendar').onclick,'function');app.node('#printCalendar').onclick();
+ app.run('monthCursor=new Date(2024,1,1)');assert.equal(typeof app.node('#printCalendarDirect').onclick,'function');app.node('#printCalendarDirect').onclick();
  assert.match(app.prints[0].html,/februar 2024/);assert.match(app.prints[0].html,/Skuddag/);
  assert.doesNotMatch(app.prints[0].html,/Martsbooking/);assert.equal((app.prints[0].html.match(/<td[ >]/g)||[]).length,35);
 });
 test('calendar printing preserves every legacy booking sharing a date',()=>{
  const d=seed();d.bookings.push({...booking,id:'b2',name:'Bo',type:'board',price:0,deposit:0,houseNo:'8'});
- const app=boot(d),before=app.store.get(KEY);app.run('monthCursor=new Date(2026,11,1)');app.node('#printCalendar').onclick();
+ const app=boot(d),before=app.store.get(KEY);app.run('monthCursor=new Date(2026,11,1)');app.node('#printCalendarDirect').onclick();
  const html=app.prints[0].html;
  assert.match(html,/2 bookinger/);assert.match(html,/Anna/);assert.match(html,/Bo/);
  assert.match(html,/Have nr\. 7/);assert.match(html,/Have nr\. 8/);
@@ -312,4 +313,30 @@ test('back returns to the previous app view and preserves the current booking dr
 });
 test('reselecting a view does not trap the back button on the same screen',()=>{
  const app=boot(seed());app.run("go('documents');go('documents')");assert.equal(typeof app.node('back-button').onclick,'function');app.node('back-button').onclick();assert.equal(app.node('#dashboard').classList.contains('active'),true);app.node('back-button').onclick();assert.equal(app.node('#dashboard').classList.contains('active'),true);
+});
+
+test('calendar PDF button creates an actual ready PDF even when browser printing does nothing',async()=>{
+ const app=boot(seed());app.run('monthCursor=new Date(2026,11,1)');const before=app.store.get(KEY);app.ctx.window.print=()=>{};
+ await app.node('#printCalendar').onclick();assert.equal(app.node('#saveCalendarPdf').download,'Hjortemosen-kalender-2026-12.pdf');assert.equal(app.node('#calendarPdfReady').classList.contains('hidden'),false);assert.match(app.node('#calendarPdfStatus').textContent,/PDF.*klar/i);
+ const response=await fetch(app.node('#openCalendarPdf').href),bytes=new Uint8Array(await response.arrayBuffer());const doc=await app.ctx.PDFLib.PDFDocument.load(bytes);assert.ok(doc.getPageCount()>=1);assert.ok(Math.abs(doc.getPage(0).getWidth()-841.89)<0.1);assert.equal(app.store.get(KEY),before);assert.equal(app.node('body').classList.contains('printing-calendar'),false);
+});
+test('changing month invalidates the old calendar PDF and stops sharing stale bookings',async()=>{
+ const app=boot(seed());app.run('monthCursor=new Date(2026,11,1)');await app.node('#printCalendar').onclick();const old=app.node('#openCalendarPdf').href;assert.match(old,/^blob:/);let shares=0;app.ctx.navigator.canShare=()=>true;app.ctx.navigator.share=async()=>{shares++;};
+ app.node('#nextMonth').onclick();await app.node('#shareCalendarPdf').onclick();assert.equal(shares,0);assert.equal(app.node('#calendarPdfReady').classList.contains('hidden'),true);assert.equal(app.node('#openCalendarPdf').href,'#');await assert.rejects(fetch(old));
+});
+test('calendar share passes the ready PDF and cancellation keeps it available',async()=>{
+ const app=boot(seed());await app.node('#printCalendar').onclick();let shared;app.ctx.navigator.canShare=()=>true;app.ctx.navigator.share=async args=>{shared=args.files[0];throw Object.assign(new Error('cancel'),{name:'AbortError'});};await app.node('#shareCalendarPdf').onclick();
+ assert.equal(shared.type,'application/pdf');assert.match(shared.name,/Hjortemosen-kalender-\d{4}-\d{2}\.pdf/);assert.ok((await app.ctx.PDFLib.PDFDocument.load(new Uint8Array(await shared.arrayBuffer()))).getPageCount());assert.equal(app.node('#calendarPdfReady').classList.contains('hidden'),false);assert.match(app.node('#calendarPdfStatus').textContent,/afbrudt/);assert.equal(app.node('#calendarPdfError').classList.contains('hidden'),true);
+});
+test('an edited booking invalidates PDF payment status and async generation cannot publish a stale month',async()=>{
+ const app=boot(seed());app.run('monthCursor=new Date(2026,11,1)');await app.node('#printCalendar').onclick();assert.match(app.node('#openCalendarPdf').href,/^blob:/);app.run('data.bookings[0].depositPaid=true;renderCalendar()');assert.equal(app.node('#calendarPdfReady').classList.contains('hidden'),true);
+ let release;app.ctx.HjortCalendarPDF.build=()=>new Promise(r=>release=r);const pending=app.node('#printCalendar').onclick();app.node('#nextMonth').onclick();release(new Uint8Array([1,2,3]));await pending;assert.equal(app.node('#calendarPdfReady').classList.contains('hidden'),true);assert.equal(app.node('#printCalendar').disabled,false);
+});
+test('calendar PDF failure is visible and preserves bookings and the active draft',async()=>{
+ const app=boot(seed());const before=app.store.get(KEY);app.node('#name').value='Bevar kladde';app.run('saveDraft()');const draft=app.store.get('hjortemosen_booking_draft_v1');app.ctx.HjortCalendarPDF={build:async()=>{throw new Error('PDF kunne ikke laves');}};
+ await app.node('#printCalendar').onclick();assert.equal(app.node('#calendarPdfReady').classList.contains('hidden'),true);assert.equal(app.node('#calendarPdfError').classList.contains('hidden'),false);assert.match(app.node('#calendarPdfError').textContent,/PDF kunne ikke laves/);assert.equal(app.node('#printCalendar').disabled,false);assert.equal(app.store.get(KEY),before);assert.equal(app.store.get('hjortemosen_booking_draft_v1'),draft);
+});
+test('a failed PDF build after changing month clears the busy message and permits retry',async()=>{
+ const app=boot(seed());let reject;app.ctx.HjortCalendarPDF={build:()=>new Promise((resolve,r)=>reject=r)};const pending=app.node('#printCalendar').onclick();app.node('#nextMonth').onclick();reject(new Error('old month failed'));await pending;
+ assert.equal(app.node('#printCalendar').disabled,false);assert.match(app.node('#calendarPdfStatus').textContent,/ændret/);assert.doesNotMatch(app.node('#calendarPdfStatus').textContent,/Laver/);assert.equal(app.node('#calendarPdfError').classList.contains('hidden'),true);
 });
