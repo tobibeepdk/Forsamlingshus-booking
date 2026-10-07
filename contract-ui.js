@@ -84,25 +84,25 @@
     // Start file sharing on the click gesture; clipboard awaits lose Safari activation.
     await navigator.share({title:subject,text:body,files:[file]});
    }else{
-    download(file,file.name);manual();status.textContent='Kontraktfilen er hentet. Åbn e-mailkladden, vedhæft filen, vælg din Hotmailkonto i Fra, og tryk selv på Send.';return;
+    download(file,file.name);manual();status.textContent='Kontraktfilen er hentet. Kladden åbner din standardmailapp uden vedhæftning. Brug Gmail som standardmailapp, eller åbn Gmail selv. Vedhæft filen fra Filer, vælg den rigtige konto, og tryk selv på Send.';return;
    }
    if(ready!==current)return;
-   status.textContent=cancelled?'E-maildeling blev afbrudt. Kontrakten er stadig klar.':'Vælg Outlook eller Mail, indsæt modtageren, vælg Hotmail i Fra, og tryk selv på Send. Kontrollér derefter Sendt post i den samme konto. Appen kan ikke kontrollere afsendelsen.';
+   status.textContent=cancelled?'E-maildeling blev afbrudt. Kontrakten er stadig klar.':'Vælg Gmail i delingen, indsæt modtageren, vælg den rigtige Googlekonto i Fra, og tryk selv på Send. Kontrollér derefter Sendt post i den samme konto. Appen kan ikke kontrollere afsendelsen.';
   }catch(err){
    if(ready!==current)return;
    if(err.name==='AbortError')status.textContent='E-maildeling blev afbrudt. Kontrakten er stadig klar.';
-   else{manual();error.textContent='E-maildeling kunne ikke åbnes. Brug Gem fil, og vedhæft kontrakten i Outlook eller Mail.';error.classList.remove('hidden');status.textContent='Kontrakten er stadig klar. Du sender selv fra din Hotmailkonto.';}
+   else{manual();error.textContent='E-maildeling kunne ikke åbnes. Brug Gem fil, og vedhæft kontrakten manuelt i Gmail.';error.classList.remove('hidden');status.textContent='Kontrakten er stadig klar. E-mailkladden bruger din standardmailapp uden vedhæftning. Åbn Gmail selv, hvis den ikke er standard, vedhæft filen, og send fra den rigtige konto.';}
   }finally{emailBusy=false;$('#sendContractEmail').disabled=false;}
  };
  $('#shareFilledContract').onclick=async()=>{
   if(!ready)return;const file=ready.file;
   try{
    if(nativeApp){const reply=await nativeApp.shareFile(file);status.textContent=reply.cancelled?'Deling blev afbrudt. Kontrakten er stadig klar.':'Delingsmenuen er afsluttet. Du kan gemme eller dele kontrakten igen.';return;}
-   if(!navigator.share||!navigator.canShare?.({files:[file]})){download(file,file.name);status.textContent='Filen er hentet. Åbn Mail eller Beskeder, vælg modtageren, og vedhæft filen fra Filer.';return;}
+   if(!navigator.share||!navigator.canShare?.({files:[file]})){download(file,file.name);status.textContent='Filen er hentet. Åbn din mailapp eller Beskeder, vælg modtageren, og vedhæft filen fra Filer.';return;}
    // The file is already generated: native sharing starts on this user gesture.
    await navigator.share({title:'Udfyldt lejekontrakt · Hjortemosen',files:[file]});
    status.textContent='Delingsmenuen er afsluttet. Du kan gemme eller dele kontrakten igen.';
-  }catch(err){if(err.name!=='AbortError'){error.textContent='Deling kunne ikke åbnes. Gem filen, og vedhæft den i Mail eller Beskeder.';error.classList.remove('hidden');}}
+  }catch(err){if(err.name!=='AbortError'){error.textContent='Deling kunne ikke åbnes. Gem filen, og vedhæft den i din mailapp eller Beskeder.';error.classList.remove('hidden');}}
  };
  $$('[data-copy-recipient]').forEach(button=>button.onclick=async()=>{
   const field=input(button.dataset.copyRecipient),value=field.value.trim();if(!value){field.focus();toast('Udfyld først modtagerens '+(button.dataset.copyRecipient==='email'?'e-mailadresse':'telefonnummer'));return;}

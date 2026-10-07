@@ -1,10 +1,10 @@
-const VERSION='2.6.3';
+const VERSION='2.6.4';
 const SCOPE=self.registration.scope;
 const PREFIX='hjortemosen-'+SCOPE+'-';
 const CACHE=PREFIX+VERSION;
 const clientVersions=new Map();
 const legacy=name=>/^hjortemosen-pwa-v1\./.test(name);
-const ASSETS=['./','./index.html','./styles.css?v=2.6.3','./data.js?v=2.6.3','./app.js?v=2.6.3','./backup.js?v=2.6.3','./native-bridge.js?v=2.6.3','./contract-libs.js?v=2.6.3','./calendar-pdf.js?v=2.6.3','./contracts.js?v=2.6.3','./signature-pad.js?v=2.6.3','./contract-ui.js?v=2.6.3','./manifest.webmanifest','./faelleshus.jpg?v=2.6.3','./favicon.svg?v=2.6.3','./icon-192.png?v=2.6.3','./icon-512.png?v=2.6.3','./apple-touch-icon.png?v=2.6.3','./kontrakt-1000.pdf?v=2.6.3','./kontrakt-1000.docx?v=2.6.3','./kontrakt-1500.pdf?v=2.6.3'];
+const ASSETS=['./','./index.html','./styles.css?v=2.6.4','./data.js?v=2.6.4','./app.js?v=2.6.4','./backup.js?v=2.6.4','./native-bridge.js?v=2.6.4','./contract-libs.js?v=2.6.4','./calendar-pdf.js?v=2.6.4','./contracts.js?v=2.6.4','./signature-pad.js?v=2.6.4','./contract-ui.js?v=2.6.4','./manifest.webmanifest','./faelleshus.jpg?v=2.6.4','./favicon.svg?v=2.6.4','./icon-192.png?v=2.6.4','./icon-512.png?v=2.6.4','./apple-touch-icon.png?v=2.6.4','./kontrakt-1000.pdf?v=2.6.4','./kontrakt-1000.docx?v=2.6.4','./kontrakt-1500.pdf?v=2.6.4'];
 self.addEventListener('install',event=>event.waitUntil((async()=>{
  const cache=await caches.open(CACHE);await cache.addAll(ASSETS);
  // v1 has no update button. Activate its first upgrade without reloading a form.

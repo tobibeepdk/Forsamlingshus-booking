@@ -1,5 +1,5 @@
 'use strict';
-const APP_VERSION='2.6.3';
+const APP_VERSION='2.6.4';
 const nativeApp=window.HjortNative?.available?window.HjortNative:null;
 let nativeReady=!nativeApp;
 if(nativeApp)document.body.inert=true;

@@ -1,4 +1,4 @@
-# Hjortemosen Booking – webversion 2.6.3
+# Hjortemosen Booking – webversion 2.6.4
 
 Booking af H/F Hjortemosens fælleshus på iPad. Appen findes som webapp/PWA og som et native iPad-projekt med de samme bookingfunktioner. Begge arbejder med lokale oplysninger og kan bruges offline, når appens filer er hentet.
 
@@ -52,9 +52,11 @@ Gem eller del en **fuld JSON-sikkerhedskopi** fra den app, der indeholder oplysn
 
 Under **Dokumenter** kan de to PDF-kontrakter og Word-kontrakten udfyldes på iPad. Vælg en booking eller skriv oplysningerne, underskriv om ønsket, og vælg **Lav udfyldt kontrakt**. Se filen igennem før deling. PDF-felterne kan også redigeres senere i en PDF-app.
 
-**Send via Outlook/Mail** kræver en gyldig modtageradresse og åbner delingsmenuen med den færdige PDF- eller Word-fil, inklusive en eventuel underskrift. Kopiér modtageradressen, vælg **Outlook** eller **Mail**, indsæt modtageren, og vælg din Hotmailkonto under **Fra**. Kontoen skal være tilføjet i mailappen. Kontrollér vedhæftningen, og tryk selv på **Send**. Kontrollér derefter **Sendt post** i den samme Hotmailkonto; en besked i **Udbakke** er endnu ikke sendt. Appen kan ikke kontrollere afsendelsen. **Åbn Sendt post i Hotmail** åbner Hotmails webmail.
+**Send via Gmail** kræver en gyldig modtageradresse og åbner iPadens delingsmenu med den færdige PDF- eller Word-fil, inklusive en eventuel underskrift. Vælg **Gmail**, indsæt modtageren, vælg den rigtige Googlekonto under **Fra**, kontrollér vedhæftningen og tryk selv på **Send**. Gmail skal være installeret, og kontoen skal være tilføjet. Hvis Gmail ikke vises, vælg **Mere** i delingsmenuen eller gem filen og vedhæft den manuelt i Gmail fra **Filer**. Outlook og Mail kan stadig vælges i delingsmenuen. Appen kan ikke vælge mailappen eller kontrollere afsendelsen.
 
-Hvis fildeling ikke understøttes, hentes den udfyldte fil, og en genvej åbner en e-mailkladde med modtager og emne. Kladden indeholder ingen vedhæftning; vedhæft filen fra **Filer** eller **Downloads** før afsendelse. Hvis deling fejler, brug **Gem fil** og vedhæft manuelt. **Del via Beskeder m.m.** bevarer den almindelige fildeling. Åbn den udfyldte PDF og brug udskriftsmenuen for at udskrive.
+Under **Dokumenter → Gmail** åbner **Åbn Gmail-indbakke** og **Åbn Gmail · vælg Sendt** Gmail i browseren. Vælg **Indbakke** eller **Sendt** i Gmail. Her kan du læse modtaget post, svare og kontrollere afsendelser. Kontrollér den aktive Googlekonto via profilbilledet; genvejene garanterer ikke en bestemt konto. Du kan også åbne Gmail-appen fra hjemmeskærmen. Bookingappen læser ikke din indbakke. Kontrollér **Sendt** i den samme konto efter afsendelse; en besked i **Udbakke** er endnu ikke sendt. Se [Googles iPad-vejledning om vedhæftninger](https://support.google.com/mail/answer/6584?hl=da&co=GENIE.Platform%3DiOS) og [valg af standard-mailapp](https://support.google.com/accounts/answer/16262222?hl=da).
+
+Hvis fildeling ikke understøttes, hentes den udfyldte fil, og en genvej åbner en e-mailkladde med modtager og emne i iPadens standard-mailapp. Vælg Gmail som standard-mailapp, eller åbn Gmail selv. Kladden indeholder ingen vedhæftning; vedhæft filen fra **Filer** eller **Downloads** før afsendelse. Hvis deling fejler, brug **Gem fil** og vedhæft manuelt. **Del via Beskeder m.m.** bevarer den almindelige fildeling. Åbn den udfyldte PDF og brug udskriftsmenuen for at udskrive.
 
 E-mailflowet i denne webversion er ikke indbygget i den tidligere native kildepakke 2.6.1. Den pakke har fortsat den almindelige delingsmenu; et nyt signeret native build kræver en separat udgivelse.
 
